@@ -107,6 +107,11 @@ function Member({ id = "" }) {
                 ยังไม่เข้าร่วมกิจกรรม
               </div>
             )}
+            <div className="flex justify-center items-center w-full p-2">
+              <button className="bg-primary text-white px-3 py-1 rounded-lg cursor-pointer hover:scale-105 transform  transition duration-300 ease-in-out">
+                จองกิจกรรม
+              </button>
+            </div>
           </div>
         </div>
       )}
