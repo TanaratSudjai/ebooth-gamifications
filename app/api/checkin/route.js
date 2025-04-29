@@ -1,4 +1,4 @@
-import { createCheckIn,getCheckIn } from "@/services/server/CheckInService";
+import { createCheckIn,getCheckIn,updateCheckIn } from "@/services/server/CheckInService";
 
 import { NextResponse } from "next/server";
 
@@ -39,6 +39,15 @@ export async function POST(req) {
       },
       { status: 200 }
     );
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
+
+export async function PUT(req) {
+  try {
+    const updatedCheckIn = await updateCheckIn(await req.json());
+    return NextResponse.json(updatedCheckIn, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

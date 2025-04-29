@@ -184,8 +184,6 @@ export const createCheckIn = async (data) => {
   }
 };
 
-
-
 export const deleteCheckIn = async (id) => {
   try {
     const [result] = await db.query(
@@ -203,3 +201,71 @@ export const deleteCheckIn = async (id) => {
     throw new Error("Failed to delete check-in");
   }
 };
+
+export const updateCheckIn = async (data) => {
+  try {
+    const checkInSchema = z.object({
+      member_id: z.number().int().positive("Member ID must be positive"),
+      activity_id: z.number().int().positive("required activity id"),
+      sub_activity_ids: z.array(z.number().int().positive("required sub activity id")),
+    });
+
+    const checkInResult = checkInSchema.safeParse(data);
+
+    if (!checkInResult.success) {
+      throw new Error(
+        checkInResult.error.errors.map((e) => e.message).join(", ")
+      );
+    }
+
+    const { member_id, activity_id, sub_activity_ids } = checkInResult.data;
+
+    // 1. Get current check-ins
+    const [existingRows] = await db.query(
+      `SELECT sub_activity_id FROM checkin WHERE member_id = ? AND activity_id = ?`,
+      [member_id, activity_id]
+    );
+
+    const existingSubActivityIds = existingRows.map(row => row.sub_activity_id);
+
+    // 2. Find which sub-activities to delete
+    const subActivityIdsToDelete = existingSubActivityIds.filter(id => !sub_activity_ids.includes(id));
+
+    if (subActivityIdsToDelete.length > 0) {
+      await db.query(
+        `DELETE FROM checkin WHERE member_id = ? AND activity_id = ? AND sub_activity_id IN (?)`,
+        [member_id, activity_id, subActivityIdsToDelete]
+      );
+    }
+
+    // 3. Find which sub-activities to add
+    const subActivityIdsToAdd = sub_activity_ids.filter(id => !existingSubActivityIds.includes(id));
+
+    for (const sub_activity_id of subActivityIdsToAdd) {
+      // Check sub-activity limit
+      const [[subActivity]] = await db.query(
+        "SELECT sub_activity_max FROM sub_activity WHERE sub_activity_id = ?",
+        [sub_activity_id]
+      );
+
+      if (!subActivity) {
+        throw new Error(`Sub-Activity ID ${sub_activity_id} not found.`);
+      }
+
+      if (subActivity.sub_activity_max <= 0) {
+        throw new Error(`Sub-Activity ID ${sub_activity_id} is full.`);
+      }
+
+      // Insert new check-in
+      await db.query(
+        `INSERT INTO checkin (member_id, activity_id, sub_activity_id, checkin_time) VALUES (?, ?, ?,NOW())`,
+        [member_id, activity_id, sub_activity_id]
+      );
+    }
+    return { message: "checkin updated successfully" };
+  } catch (error) {
+    console.error("Error updating check-in:", error.message);
+    throw new Error(error.message || "Failed to update check-in");
+  }
+}
+
