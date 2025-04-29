@@ -33,8 +33,7 @@ export async function POST(req) {
     const checkin = await createCheckIn(await req.json());
     return NextResponse.json(
       {
-        status: "success",
-        message: "checkin created successfully",
+        status: checkin.status,
         data: checkin,
       },
       { status: checkin.status }
