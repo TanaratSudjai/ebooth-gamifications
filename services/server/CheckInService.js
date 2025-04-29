@@ -126,7 +126,7 @@ export const createCheckIn = async (data) => {
       );
 
       if (existingCheckIn) {
-        throw new Error(`Already checked in for Sub-Activity ID ${sub_activity_id}`);
+        return { message: `Already checked in for Sub-Activity ID ${sub_activity_id}`, status: 400 };
       }
 
       // Check sub-activity limit
