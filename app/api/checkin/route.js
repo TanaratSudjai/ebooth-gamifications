@@ -37,7 +37,7 @@ export async function POST(req) {
         message: "checkin created successfully",
         data: checkin,
       },
-      { status: 200 }
+      { status: checkin.status }
     );
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });

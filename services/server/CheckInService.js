@@ -108,11 +108,11 @@ export const createCheckIn = async (data) => {
     );
 
     if (!activity) {
-      throw new Error("Activity not found.");
+      return { message: "Activity not found.", status: 400 };
     }
 
     if (activity.activity_max < sub_activity_ids.length) {
-      throw new Error("Not enough activity slots available.");
+      return { message: "Not enough activity slots available.", status: 400 };
     }
 
     const checkInResults = [];
