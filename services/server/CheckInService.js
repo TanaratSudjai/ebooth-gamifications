@@ -13,7 +13,6 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
        WHERE member.member_id = ?`,
       [id]
     );
-    
 
     if (!member) {
       throw new Error("Member not found");
@@ -88,7 +87,9 @@ export const createCheckIn = async (data) => {
     const checkInSchema = z.object({
       member_id: z.number().int().positive("Member ID must be positive"),
       activity_id: z.number().int().positive("required activity id"),
-      sub_activity_ids: z.array(z.number().int().positive("required sub activity id")),
+      sub_activity_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
     });
 
     const checkInResult = checkInSchema.safeParse(data);
@@ -126,7 +127,10 @@ export const createCheckIn = async (data) => {
       );
 
       if (existingCheckIn) {
-        return { message: `Already checked in for Sub-Activity ID ${sub_activity_id}`, status: 400 };
+        return {
+          status: 400,
+          message: "You have already registered for this activity.",
+        };
       }
 
       // Check sub-activity limit
@@ -207,7 +211,9 @@ export const updateCheckIn = async (data) => {
     const checkInSchema = z.object({
       member_id: z.number().int().positive("Member ID must be positive"),
       activity_id: z.number().int().positive("required activity id"),
-      sub_activity_ids: z.array(z.number().int().positive("required sub activity id")),
+      sub_activity_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
     });
 
     const checkInResult = checkInSchema.safeParse(data);
@@ -226,10 +232,14 @@ export const updateCheckIn = async (data) => {
       [member_id, activity_id]
     );
 
-    const existingSubActivityIds = existingRows.map(row => row.sub_activity_id);
+    const existingSubActivityIds = existingRows.map(
+      (row) => row.sub_activity_id
+    );
 
     // 2. Find which sub-activities to delete
-    const subActivityIdsToDelete = existingSubActivityIds.filter(id => !sub_activity_ids.includes(id));
+    const subActivityIdsToDelete = existingSubActivityIds.filter(
+      (id) => !sub_activity_ids.includes(id)
+    );
 
     if (subActivityIdsToDelete.length > 0) {
       await db.query(
@@ -239,7 +249,9 @@ export const updateCheckIn = async (data) => {
     }
 
     // 3. Find which sub-activities to add
-    const subActivityIdsToAdd = sub_activity_ids.filter(id => !existingSubActivityIds.includes(id));
+    const subActivityIdsToAdd = sub_activity_ids.filter(
+      (id) => !existingSubActivityIds.includes(id)
+    );
 
     for (const sub_activity_id of subActivityIdsToAdd) {
       // Check sub-activity limit
@@ -267,5 +279,4 @@ export const updateCheckIn = async (data) => {
     console.error("Error updating check-in:", error.message);
     throw new Error(error.message || "Failed to update check-in");
   }
-}
-
+};

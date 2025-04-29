@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
+import BottonBooking from "@/app/admin/components/Common/BottonBooking";
+
 function Member({ id = "" }) {
   const [member, setMember] = useState([]);
   const [checkIn, setCheckIn] = useState([]);
@@ -107,10 +109,8 @@ function Member({ id = "" }) {
                 ยังไม่เข้าร่วมกิจกรรม
               </div>
             )}
-            <div className="flex justify-center items-center w-full p-2">
-              <button className="bg-primary text-white px-3 py-1 rounded-lg cursor-pointer hover:scale-105 transform  transition duration-300 ease-in-out">
-                จองกิจกรรม
-              </button>
+            <div className="flex  justify-center">
+              <BottonBooking id={id} />
             </div>
           </div>
         </div>

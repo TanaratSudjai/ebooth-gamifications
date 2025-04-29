@@ -143,7 +143,7 @@ function page() {
               className="p-2 border border-gray-300 rounded-lg w-full"
               type="text"
               name="member_address"
-              placeholder="อีเมล"
+              placeholder="ที่อยู่"
               required
               onChange={handleChange}
               value={formData.member_address}
