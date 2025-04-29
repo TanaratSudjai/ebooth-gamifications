@@ -8,6 +8,8 @@ import CardActivity from "@/app/admin/components/Common/Card/Activity";
 import dayjs from "dayjs";
 import { TiShoppingCart } from "react-icons/ti";
 import { array } from "zod";
+import QRCode from "qrcode";
+import { generatePromptPayPayload } from "@/utils/promptpay";
 function page() {
   // lazy loading
   const params = useParams();
@@ -15,12 +17,14 @@ function page() {
   const activity_id = params?.ac_id;
   const user_id = params?.u_id;
   const [loading, setLoading] = useState(false);
-  const { showSuccess, showError,showWarning } = useAlert();
+  const { showSuccess, showError, showWarning } = useAlert();
 
   //state
   const [activity, setActivity] = useState(null);
   const [subactivity, setSubActivity] = useState(null);
   const [subActivityId, setSubActivityId] = useState([]);
+  const [payment, setPayment] = useState(null);
+  const [qrDataUrl, setQrDataUrl] = useState("");
 
   const handleCheckboxChange = (e) => {
     const { checked, value } = e.target;
@@ -59,12 +63,11 @@ function page() {
       });
       const { status } = response.data;
       if (status === 400) {
-        showWarning("ไม่สามารถเช็คอินได้","คุณได้ทำรายการไปแล้ว");
+        showWarning("ไม่สามารถเช็คอินได้", "คุณได้ทำรายการไปแล้ว");
         return;
       }
-
-      console.log("Check-in Success:", response.data);
       showSuccess("สำเร็จ", "สั่งซื้อสำเร็จ");
+      document.getElementById("my_modal_1").showModal();
       // router.push("/admin/booking");
     } catch (err) {
       const message =
@@ -74,6 +77,15 @@ function page() {
   };
 
   useEffect(() => {
+    const payload = generatePromptPayPayload({
+      mobileNumber: "0658827087", // เบอร์มือถือ PromptPay
+      amount: 100.0,
+    });
+    QRCode.toDataURL(payload, { width: 300 }, (err, url) => {
+      if (!err) {
+        setQrDataUrl(url);
+      }
+    });
     if (activity_id && user_id) {
       fetchData();
     }
@@ -83,7 +95,7 @@ function page() {
     <div>
       {" "}
       <CommonTextHeaderView text="รายละเอียดการจอง" dis={false} />
-      <div className="container mx-auto p-5">
+      <div className="container mx-auto p-5 min-h-screen">
         {activity && (
           <div className="container mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:flex-row">
@@ -219,6 +231,17 @@ function page() {
           </div>
         )}
       </div>
+      <dialog id="my_modal_1" className="modal">
+        <div className="modal-box bg-white flex flex-col justify-center items-center">
+          {" "}
+          <h1 className="font-bold">รีบโอนรีบไปตายไป ไอ้ควาย</h1>
+          {qrDataUrl ? (
+            <img src={qrDataUrl} alt="PromptPay QR Code" />
+          ) : (
+            <p>กำลังสร้าง QR...</p>
+          )}
+        </div>
+      </dialog>
     </div>
   );
 }
