@@ -109,11 +109,11 @@ export const createCheckIn = async (data) => {
     );
 
     if (!activity) {
-      return { message: "Activity not found.", status: 400 };
+      return { message: "Activity not found.", status: 404 };
     }
 
     if (activity.activity_max < sub_activity_ids.length) {
-      return { message: "Not enough activity slots available.", status: 400 };
+      return { message: "Not enough activity slots available.", status: 401 };
     }
 
     const checkInResults = [];
@@ -140,11 +140,11 @@ export const createCheckIn = async (data) => {
       );
 
       if (!subActivity) {
-        throw new Error(`Sub-Activity ID ${sub_activity_id} not found.`);
+        return { message: `Sub-Activity ID ${sub_activity_id} not found.`, status: 404 };
       }
 
       if (subActivity.sub_activity_max <= 0) {
-        throw new Error(`Sub-Activity ID ${sub_activity_id} is full.`);
+        return { message: `Sub-Activity ID ${sub_activity_id} is full.`, status: 401 };
       }
 
       // Insert check-in
