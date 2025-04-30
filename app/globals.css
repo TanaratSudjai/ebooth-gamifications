@@ -29,3 +29,6 @@ input:-webkit-autofill {
 .action-button-del {
   @apply p-2 rounded-md bg-gray-200 hover:bg-red-300  transition-all cursor-pointer;
 }
+.action-button-add {
+  @apply p-2 rounded-md bg-gray-200 hover:bg-blue-300  transition-all cursor-pointer;
+}
