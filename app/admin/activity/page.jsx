@@ -4,8 +4,7 @@ import BottonAddding from "../components/Common/BottonAddding";
 import ActivityData from "../components/Common/Table/ActivityData";
 import CommonTextHeaderView from "../components/Common/TextHeader/View";
 import BottonQuery from "../components/Common/BottonQuery";
-import Image from "next/image";
-import { IoIosAddCircle } from "react-icons/io";
+import { MdNoteAdd } from "react-icons/md";
 function page() {
   return (
     <div>
@@ -29,7 +28,7 @@ function page() {
             params="status processing"
           />
           <div className="flex items-center justify-center text-gray-600 font-medium">
-            <IoIosAddCircle />
+            <MdNoteAdd />
             {"( ปุ่มเพิ่มกิจกรรมย่อย )"}
           </div>
         </div>

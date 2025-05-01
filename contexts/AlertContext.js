@@ -38,9 +38,25 @@ export const AlertProvider = ({ children }) => {
       });
     }
   };
+  const showWarning = (title = "Oops!", message = "Something went wrong.") => {
+    if (typeof window !== "undefined") {
+      Swal.fire({
+        position: "top-end",
+        toast: true,
+        icon: "warning",
+        title: title,
+        text: message,
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+        background: "#FFFBE6", // สีเหลืองอ่อน
+        color: "#333333", // สีข้อความดำหม่น อ่านง่าย
+      });
+    }
+  };
 
   return (
-    <AlertContext.Provider value={{ showSuccess, showError }}>
+    <AlertContext.Provider value={{ showSuccess, showError, showWarning }}>
       {children}
     </AlertContext.Provider>
   );

@@ -221,7 +221,7 @@ function ActivityData() {
                 <td className="table-cell-style ">
                   {activity.sub_activity_count || (
                     <button
-                      className="action-button"
+                      className="action-button-add"
                       onClick={(e) => {
                         e.stopPropagation();
                         openModal(activity.activity_id);
@@ -250,6 +250,21 @@ function ActivityData() {
                     >
                       <MdDeleteSweep />
                     </button>
+
+                    {!activity.sub_activity_count ||
+                    activity.sub_activity_count === 0 ? (
+                      <div className=""></div>
+                    ) : (
+                      <button
+                        className="action-button-add"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModal(activity.activity_id);
+                        }}
+                      >
+                        <MdNoteAdd />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -263,7 +278,7 @@ function ActivityData() {
           )}
         </tbody>
       </table>
-      
+
       {/* btn pagination */}
       <div className="pagination container mx-auto px-10 flex justify-center gap-5 items-center mt-4">
         <button
