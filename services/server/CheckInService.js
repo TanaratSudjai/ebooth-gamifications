@@ -140,11 +140,17 @@ export const createCheckIn = async (data) => {
       );
 
       if (!subActivity) {
-        return { message: `Sub-Activity ID ${sub_activity_id} not found.`, status: 404 };
+        return {
+          message: `Sub-Activity ID ${sub_activity_id} not found.`,
+          status: 404,
+        };
       }
 
       if (subActivity.sub_activity_max <= 0) {
-        return { message: `Sub-Activity ID ${sub_activity_id} is full.`, status: 401 };
+        return {
+          message: `Sub-Activity ID ${sub_activity_id} is full.`,
+          status: 401,
+        };
       }
 
       // Insert check-in
@@ -278,5 +284,57 @@ export const updateCheckIn = async (data) => {
   } catch (error) {
     console.error("Error updating check-in:", error.message);
     throw new Error(error.message || "Failed to update check-in");
+  }
+};
+
+export const getSubAcvitityByMemberIdAndActivity = async (data) => {
+  const subActivitySchema = z.object({
+    member_id: z.number().int().positive("Member ID must be positive"),
+    activity_id: z.number().int().positive("required activity id"),
+  });
+
+  const subActivityResult = subActivitySchema.safeParse(data);
+
+  if (!subActivityResult.success) {
+    throw new Error(
+      subActivityResult.error.errors.map((e) => e.message).join(", ")
+    );
+  }
+
+  const { member_id, activity_id } = subActivityResult.data;
+
+  try {
+    // 1. Get member info
+    const [[member]] = await db.query(
+      `SELECT * FROM checkin 
+       WHERE member_id = ?`,
+      [member_id]
+    );
+
+    // 2. Get activity info
+    const [[activity]] = await db.query(
+      `SELECT * FROM checkin 
+       WHERE activity_id = ?`,
+      [activity_id]
+    );
+
+    // 3. Get subactivities for that member and activity
+    const [subactivities] = await db.query(
+      `SELECT *
+       FROM checkin 
+       LEFT JOIN sub_activity ON checkin.sub_activity_id = sub_activity.sub_activity_id
+       WHERE checkin.member_id = ? AND checkin.activity_id = ?`,
+      [member_id, activity_id]
+    );
+
+    activity.subactivity = subactivities;
+
+    return {
+      member,
+      activity,
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw new Error("Failed to fetch data");
   }
 };
