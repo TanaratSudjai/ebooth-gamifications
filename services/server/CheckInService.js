@@ -37,16 +37,51 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
     );
 
     const totalPages = Math.ceil(count / limit);
+    const groupedActivities = {};
+
+    checkins.forEach((item) => {
+      const {
+        activity_id,
+        activity_name,
+        activity_description,
+        activity_max,
+        sub_activity_id,
+        sub_activity_name,
+        sub_activity_description,
+        sub_activity_max,
+        checkin_time
+      } = item;
+    
+      if (!groupedActivities[activity_id]) {
+        groupedActivities[activity_id] = {
+          activity_id,
+          activity_name,
+          activity_description,
+          activity_max,
+          sub_activities: [],
+        };
+      }
+    
+      groupedActivities[activity_id].sub_activities.push({
+        sub_activity_id,
+        sub_activity_name,
+        sub_activity_description,
+        sub_activity_max,
+        checkin_time,
+      });
+    });
+
+    const activities = Object.values(groupedActivities);
 
     return {
       member: {
         ...member,
-        checkin: checkins,
+        checkin: activities,
       },
       pagination: {
         page,
         limit,
-        totalPages: totalPages,
+        totalPages,
         totalItems: count,
       },
     };
