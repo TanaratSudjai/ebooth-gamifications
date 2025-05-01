@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import BottonBooking from "@/app/admin/components/Common/BottonBooking";
-import { UserCircle, Mail, MapPin, Award, Calendar, Users,CalendarSearch  } from "lucide-react";
+import { UserCircle, Mail, MapPin, Award, Calendar, Users, CalendarSearch } from "lucide-react";
 
 function Member({ id = "" }) {
   const [member, setMember] = useState([]);
@@ -15,6 +15,8 @@ function Member({ id = "" }) {
       const response = await axios.get(`/api/checkin/${id}`);
       setMember(response.data.data);
       setCheckIn(response.data.data.member.checkin);
+      console.log(response.data.data.member.checkin);
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -59,7 +61,7 @@ function Member({ id = "" }) {
                   <span>{member.member.member_email}</span>
                 </div>
               </div>
-              
+
               <div className="space-y-4 border-t pt-4">
                 <div className="flex items-start">
                   <MapPin className="mr-2 text-amber-500 flex-shrink-0 mt-1" size={18} />
@@ -109,7 +111,7 @@ function Member({ id = "" }) {
                 กิจกรรมที่เข้าร่วม
               </h3>
             </div>
-            
+
             <div className=" p-4 overflow-y-auto max-h-[600px]">
               {Array.isArray(checkIn) && checkIn.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -118,23 +120,38 @@ function Member({ id = "" }) {
                       <div className="bg-amber-100 px-4 py-3 rounded-t-lg">
                         <h4 className="font-bold text-gray-800">{checkIn.activity_name}</h4>
                         <div className="flex items-center text-gray-700 text-sm mt-1">
-                          <span>{checkIn.sub_activity_name}</span>
-                          <span className="bg-amber-200 text-amber-800 text-xs font-medium px-2 py-0.5 rounded ml-2">
-                            {checkIn.sub_activity_max} ที่นั่ง
+                          <span className="bg-amber-200 text-amber-800 text-xs font-medium px-2 py-0.5 rounded ">
+                            {checkIn.activity_max} ที่นั่ง
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="p-4">
-                        <p className="text-gray-600 text-sm mb-3">{checkIn.sub_activity_description}</p>
-                        
+                        <p className="text-gray-600 text-sm mb-3">{checkIn.activity_description}</p>
+
+                        {/* call data subactivity */}
+                        {checkIn.sub_activities && checkIn.sub_activities.length > 0 ? (
+                          <div className="text-yellow-500">
+                            <p>กิจกรรมย่อย:</p>
+                            <ul className="list-disc pl-5">
+                              {checkIn.sub_activities.map((sub, index) => (
+                                <li key={index}>
+                                  {sub.sub_activity_name} <span className="text-gray-500 text-xs">({new Date(sub.checkin_time).toLocaleString()})</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="text-red-600">ไม่มีกิจกรรมย่อย</div>
+                        )}
+
                         <div className="flex justify-between items-center mt-2">
                           <div className="flex items-center text-sm">
                             <Users size={16} className="text-amber-500 mr-1" />
                             <span className="text-gray-600">จำนวนที่นั่งเหลือ: </span>
                             <span className="font-bold text-amber-500 ml-1">{checkIn.activity_max}</span>
                           </div>
-                          
+
                           <button className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
                             เช็คอิน
                           </button>
@@ -150,7 +167,7 @@ function Member({ id = "" }) {
                 </div>
               )}
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
               <div className="flex justify-center">
                 <BottonBooking id={id} />
