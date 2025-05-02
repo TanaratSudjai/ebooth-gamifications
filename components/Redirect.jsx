@@ -13,7 +13,7 @@ export default function RedirectAfterLogin() {
         if (session?.user?.is_admin) {
           router.replace("/admin/dashboard");
         } else {
-          router.replace("/member");
+          router.replace("/personal");
         }
       }, 1500);
       return () => clearTimeout(timer);

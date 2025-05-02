@@ -1,26 +1,24 @@
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
-  // ดึงค่า token จาก cookies
-  const token = req.cookies.get("next-auth.session-token")?.value;
-  console.log("Token:", token); // แสดงค่า token ใน console
+export async function middleware(req) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // ถ้าไม่มี token และกำลังเข้าถึงหน้า admin
-
-  if (!token && req.nextUrl.pathname.startsWith("/admin")) {
-    // รีไดเร็กต์ไปที่หน้าแรกหรือหน้า login
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-  if (!token && req.nextUrl.pathname.startsWith("/member")) {
-    // รีไดเร็กต์ไปที่หน้าแรกหรือหน้า login
-    return NextResponse.redirect(new URL("/", req.url));
+  // ตรวจสอบว่าเข้าหน้า /admin และไม่ใช่ admin
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    if (!token || token.is_admin !== 1) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
   }
 
-  // ถ้ามี token หรือไม่ใช่หน้า admin ก็ให้ผ่าน
+  // ถ้าเข้าหน้า /personal ต้อง login เท่านั้น
+  if (req.nextUrl.pathname.startsWith("/personal") && !token) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  // กำหนดให้ middleware ทำงานกับ path /admin และทุก path ย่อย
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/personal/:path*"],
 };
