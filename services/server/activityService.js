@@ -233,3 +233,39 @@ export const getActivityData = async (page = 1, limit = 10) => {
   }
 };
 
+export const getActivityByPersonnelId = async (personnel_id) => {
+  try {
+
+    const [getPersonnel] = await db.query(
+      `SELECT * FROM personnel WHERE personnel_id = ?`,
+      [personnel_id]
+    );
+
+
+    const [getOrganizeId] = await db.query(
+      `SELECT organize_id FROM personnel WHERE personnel_id = ?`,
+      [personnel_id]
+    );
+
+    const organizeId = getOrganizeId[0]?.organize_id;
+
+    if (!organizeId) {
+      throw new Error("No organize_id found for the given personnel_id");
+    }
+
+    const [getActivity] = await db.query(
+      `SELECT * FROM activity WHERE organize_id = ?`,
+      [organizeId]
+    );
+
+    console.log(getActivity);
+
+    return {
+      personnel: getPersonnel,
+      activity: getActivity,
+    }; 
+  } catch (error) {
+    console.error("Error fetching activity by personnel ID:", error);
+    throw new Error("Failed to fetch activities");
+  }
+};
