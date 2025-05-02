@@ -37,7 +37,7 @@ export const authOptions = {
               id: user.member_id,
               username: user.member_username,
               email: user.member_email,
-              role: "member",
+              role: "admin",
               is_admin: user.is_admin,
             };
           }

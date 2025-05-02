@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function RedirectAfterLogin() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  console.log(session?.user?.role);
 
   useEffect(() => {
     if (status === "authenticated") {

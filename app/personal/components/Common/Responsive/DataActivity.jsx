@@ -4,14 +4,18 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 function DataActivity({ isMobile }) {
   const [activity, setActivity] = useState([]); // [activity]
   const [searchText, setSearchText] = useState("");
   const { data: session, status } = useSession();
   const id = session?.user?.id;
+  const r = useRouter();
   const fetchData = async (id) => {
     try {
-      const res = await axios.get(`/api/activity/getActivityByPersonnelId/40`);
+      const res = await axios.get(
+        `/api/activity/getActivityByPersonnelId/${id}`
+      );
       setActivity(res.data.data.activity);
       // console.log(res.data.data);
     } catch (err) {
@@ -20,7 +24,8 @@ function DataActivity({ isMobile }) {
   };
 
   const handleParams = (activity_id) => {
-    // console.log(activity_id);
+    console.log(activity_id);
+    r.push(`/personal/activity/list_member/${activity_id}`);
   };
 
   const filteredActivity = activity.filter((item) =>
@@ -28,8 +33,10 @@ function DataActivity({ isMobile }) {
   );
 
   useEffect(() => {
-    fetchData(id);
-  }, []);
+    if (status === "authenticated" && id) {
+      fetchData(id);
+    }
+  }, [status, id]);
 
   return (
     <div className="mt-5">
@@ -55,7 +62,7 @@ function DataActivity({ isMobile }) {
           <input
             type="search"
             className="grow"
-            placeholder="Search"
+            placeholder="ค้นหาจากชื่อกิจกรรม"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -100,7 +107,7 @@ function DataActivity({ isMobile }) {
             >
               <table className="table">
                 <thead className="text-center">
-                  <tr className="text-blue-500 bg-white">
+                  <tr className="text-blue-400 bg-white">
                     <th className="text-left">ชื่อกิจกรรม</th>
                     <th>วันที่</th>
                     <th>จำนวนผู้เข้าร่วม</th>
@@ -121,7 +128,7 @@ function DataActivity({ isMobile }) {
                       </td>
                       <td>
                         ว่าง{" "}
-                        <span className="text-blue-500">
+                        <span className="text-blue-400">
                           {item.activity_max}{" "}
                         </span>{" "}
                         ที่นั่ง
