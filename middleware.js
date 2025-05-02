@@ -13,7 +13,9 @@ export async function middleware(req) {
 
   // ถ้าเข้าหน้า /personal ต้อง login เท่านั้น
   if (req.nextUrl.pathname.startsWith("/personal") && !token) {
-    return NextResponse.redirect(new URL("/", req.url));
+    if (!token || token.is_admin !== 2) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
   }
 
   return NextResponse.next();
