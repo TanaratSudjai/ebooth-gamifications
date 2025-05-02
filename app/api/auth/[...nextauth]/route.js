@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import pool from "@/services/server/db"; // แก้ไขให้ตรงกับที่เก็บไฟล์ db.js
+import pool from "@/services/server/db"; // เชื่อมต่อกับฐานข้อมูล
 import bcrypt from "bcrypt";
 
 export const authOptions = {
@@ -12,37 +12,59 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials || !credentials.email || !credentials.password) {
+        if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
 
         const { email, password } = credentials;
-        const [rows] = await pool.query(
-          "SELECT * FROM member WHERE member_email = ?",
-          [email]
-        );
 
-        if (!rows || rows.length === 0) {
+        try {
+          // ตรวจสอบข้อมูลในตาราง `member`
+          const [memberRows] = await pool.query(
+            "SELECT * FROM member WHERE member_email = ?",
+            [email]
+          );
+
+          if (memberRows && memberRows.length > 0) {
+            const user = memberRows[0];
+            const isPasswordValid = await bcrypt.compare(
+              password,
+              user.member_password
+            );
+            if (!isPasswordValid) return null;
+
+            return {
+              id: user.member_id,
+              username: user.member_username,
+              email: user.member_email,
+              role: "member",
+              is_admin: user.is_admin,
+            };
+          }
+
+          // ตรวจสอบข้อมูลในตาราง `personnel`
+          const [personalRows] = await pool.query(
+            "SELECT * FROM personnel WHERE personel_username = ?",
+            [email]
+          );
+
+          if (personalRows && personalRows.length > 0) {
+            const user = personalRows[0];
+
+            return {
+              id: user.personnel_id,
+              username: user.personnel_name,
+              email: user.personel_username,
+              role: "personal",
+              is_admin: false,
+            };
+          }
+        } catch (error) {
+          console.error(error);
           return null;
         }
 
-        const user = rows[0];
-
-        const isPasswordValid = await bcrypt.compare(
-          password,
-          user.member_password
-        );
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        // ส่งเฉพาะค่าที่ต้องการ
-        return {
-          id: user.member_id,
-          username: user.member_username,
-          email: user.member_email,
-          is_admin: user.is_admin,
-        };
+        return null;
       },
     }),
   ],
@@ -60,7 +82,8 @@ export const authOptions = {
         token.id = user.id;
         token.username = user.username;
         token.email = user.email;
-        token.is_admin = user.is_admin;
+        token.is_admin = user.is_admin || false;
+        token.role = user.role;
       }
       return token;
     },
@@ -71,13 +94,14 @@ export const authOptions = {
         session.user.username = token.username;
         session.user.email = token.email;
         session.user.is_admin = token.is_admin;
+        session.user.role = token.role;
       }
       return session;
     },
 
-    // ⚠️ `user` จะ undefined เสมอใน JWT mode!
+    // ⚠️ `user` จะเป็น undefined เสมอใน JWT mode
     async redirect({ url, baseUrl }) {
-      // เอาข้อมูลไปจัดการใน frontend ดีกว่า
+      // ส่งต่อไปยังหน้าเว็บที่ต้องการ
       return baseUrl;
     },
   },

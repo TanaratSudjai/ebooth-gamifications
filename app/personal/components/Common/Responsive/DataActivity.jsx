@@ -3,22 +3,24 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 function DataActivity({ isMobile }) {
   const [activity, setActivity] = useState([]); // [activity]
   const [searchText, setSearchText] = useState("");
-
-  const fetchData = async () => {
+  const { data: session, status } = useSession();
+  const id = session?.user?.id;
+  const fetchData = async (id) => {
     try {
-      const res = await axios.get("/api/activity");
-      setActivity(res.data.data);
-      console.log(res.data.data);
+      const res = await axios.get(`/api/activity/getActivityByPersonnelId/40`);
+      setActivity(res.data.data.activity);
+      // console.log(res.data.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   const handleParams = (activity_id) => {
-    console.log(activity_id);
+    // console.log(activity_id);
   };
 
   const filteredActivity = activity.filter((item) =>
@@ -26,7 +28,7 @@ function DataActivity({ isMobile }) {
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData(id);
   }, []);
 
   return (

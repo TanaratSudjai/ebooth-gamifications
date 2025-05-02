@@ -10,10 +10,12 @@ export default function RedirectAfterLogin() {
   useEffect(() => {
     if (status === "authenticated") {
       const timer = setTimeout(() => {
-        if (session?.user?.is_admin === 1) {
+        if (session?.user?.role === "admin") {
           router.replace("/admin/dashboard");
-        } else if (session?.user?.is_admin === 2) {
+        } else if (session?.user?.role === "personal") {
           router.replace("/personal/management");
+        } else {
+          router.replace("/member/dashboard");
         }
       }, 1500);
       return () => clearTimeout(timer);
