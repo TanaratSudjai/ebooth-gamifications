@@ -348,8 +348,10 @@ export const getSubAcvitityByMemberIdAndActivity = async (data) => {
 
     // 2. Get activity info
     const [[activity]] = await db.query(
-      `SELECT * FROM checkin 
-       WHERE activity_id = ?`,
+      `SELECT activity.*, checkin.checkin_id, member_id, sub_activity_id, checkin_time , is_checkin
+       FROM checkin 
+       LEFT JOIN activity ON checkin.activity_id = activity.activity_id
+       WHERE activity.activity_id = ?`,
       [activity_id]
     );
 
