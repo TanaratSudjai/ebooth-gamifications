@@ -24,8 +24,18 @@ function DataListMember({ isMobile, activity_id }) {
   const filteredmember = member.filter((item) =>
     item.member_username.toLowerCase().includes(searchText.toLowerCase())
   );
-  const handleParams = (member_id) => {
-    console.log(member_id);
+  const handleParams = (member_id, activity_id) => {
+    console.log(member_id, activity_id);
+    r.push(`/personal/booking/${activity_id}/sub/${member_id}`);
+  };
+
+  const handleCheckIn = (member_id, activity_id) => {
+    console.log(
+      "สมาชิก รหัส",
+      member_id,
+      "เข้าร่วมกิจกรรม รหัสที่ " + Number(activity_id) + " สำเร็จ"
+    );
+    // r.push(`/personal/booking/${activity_id}/sub/${member_id}`);
   };
 
   useEffect(() => {
@@ -77,11 +87,13 @@ function DataListMember({ isMobile, activity_id }) {
               transition={{ duration: 0.3 }}
               className="text-sm"
             >
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto">
+              <div className="grid  md:grid-cols-2 lg:grid-cols-3 gap-2 overflow-y-auto">
                 {filteredmember.map((member) => (
                   <div
                     key={member.member_id}
-                    onClick={() => handleParams(member.member_id)}
+                    onClick={() =>
+                      handleParams(Number(member.member_id), Number(ac_id))
+                    }
                     className="bg-base-300 p-2 rounded-xl border-r-2 border-r-blue-300"
                   >
                     <div className="text-blue-400 bg-base-100 p-1 px-2 rounded-xl w-auto">
@@ -94,10 +106,21 @@ function DataListMember({ isMobile, activity_id }) {
                           {member.member_username}
                         </span>
                       </div>
-                      <div className="">
-                        ที่อยุ่{" "}
-                        <span className="bg-base-300 px-2 rounded-2xl">
+                      <div className="flex justify-between items-center">
+                        <span className="bg-base-300 rounded-2xl flex gap-2">
+                          <p className="text-blue-300">ที่อยุ่</p>{" "}
                           {member.member_address}
+                        </span>
+                        <span className="bg-base-300 px-2 rounded-2xl">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCheckIn(member.member_id, Number(ac_id));
+                            }}
+                            className="btn bg-blue-400 w-auto rounded-2xl text-base-200"
+                          >
+                            เช็คชื่อ
+                          </button>
                         </span>
                       </div>
                     </div>
@@ -120,18 +143,30 @@ function DataListMember({ isMobile, activity_id }) {
                     <th className="text-left">ลำดับ</th>
                     <th className="text-left">รายชื่อ</th>
                     <th>ที่อยู่</th>
+                    <th>เช็คอินเข้าร่วมงาน</th>
                   </tr>
                 </thead>
                 <tbody className="text-center">
                   {filteredmember.map((member, index) => (
                     <tr
                       key={member.member_id}
-                      onClick={() => handleParams(member.member_id)}
+                      onClick={() => handleParams(member.member_id, ac_id)}
                       className="cursor-pointer  hover:bg-gray-400 hover:text-black transform transition hover:scale-101 duration-300 ease-in-out"
                     >
                       <td className="text-left">{index + 1}</td>
                       <td className="text-left">{member.member_username}</td>
                       <td>{member.member_address}</td>
+                      <td>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCheckIn(member.member_id, Number(ac_id));
+                          }}
+                          className="btn mt-2 bg-blue-400 w-auto rounded-2xl text-base-200"
+                        >
+                          เช็คชื่อ
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
