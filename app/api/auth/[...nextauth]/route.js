@@ -44,7 +44,7 @@ export const authOptions = {
 
           // ตรวจสอบข้อมูลในตาราง `personnel`
           const [personalRows] = await pool.query(
-            "SELECT * FROM personnel WHERE personel_username = ?",
+            "SELECT * FROM personnel WHERE personnel_email = ?",
             [email]
           );
 
@@ -53,8 +53,8 @@ export const authOptions = {
 
             return {
               id: user.personnel_id,
-              username: user.personnel_name,
-              email: user.personel_username,
+              username: user.personnel_username,
+              email: user.personnel_email,
               role: "personal",
               is_admin: false,
             };

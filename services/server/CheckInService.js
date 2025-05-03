@@ -59,7 +59,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
         sub_activity_name,
         sub_activity_description,
         sub_activity_max,
-        checkin_time
+        checkin_time,
       } = row;
 
       if (!activityMap[activity_id]) {
@@ -69,7 +69,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
           activity_description,
           activity_max,
           checkin_time,
-          sub_activities: []
+          sub_activities: [],
         };
       }
 
@@ -79,7 +79,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
           sub_activity_name,
           sub_activity_description,
           sub_activity_max,
-          checkin_time
+          checkin_time,
         });
       }
     }
@@ -89,22 +89,20 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
     return {
       member: {
         ...member,
-        checkin: result
+        checkin: result,
       },
       pagination: {
         page,
         limit,
         totalPages,
-        totalItems: count
-      }
+        totalItems: count,
+      },
     };
   } catch (error) {
     console.error("Error fetching data:", error);
     throw new Error("Failed to fetch data");
   }
 };
-
-
 
 export const getCheckIn = async (page = 1, limit = 10) => {
   try {
@@ -152,8 +150,6 @@ export const createCheckIn = async (data) => {
 
     const { member_id, activity_id, sub_activity_ids } = checkInResult.data;
 
-    console.log(sub_activity_ids);
-
     // Check activity limit
     const [[activity]] = await db.query(
       "SELECT activity_max FROM activity WHERE activity_id = ?",
@@ -165,7 +161,7 @@ export const createCheckIn = async (data) => {
     }
 
     if (activity.activity_max < sub_activity_ids.length) {
-      return { message: "Not enough activity slots available.", status: 401 };
+      return { message: "Not enough activity slots available.", status: 409 };
     }
 
     const checkInResults = [];
@@ -210,6 +206,20 @@ export const createCheckIn = async (data) => {
 
       return newCheckInRows;
     } else {
+      const [[existingCheckIn]] = await db.query(
+        `SELECT checkin_id FROM checkin 
+         WHERE member_id = ? AND activity_id = ? AND sub_activity_id IS NULL`,
+        [member_id, activity_id]
+      );
+
+      // Only insert the main activity check-in if it doesn't already exist
+      if (!existingCheckIn) {
+        const [result] = await db.query(
+          "INSERT INTO checkin (member_id, activity_id, sub_activity_id, checkin_time) VALUES (?, ?, null, NOW())",
+          [member_id, activity_id]
+        );
+      }
+
       for (const sub_activity_id of sub_activity_ids) {
         // Check if already registered
         const [[existingCheckIn]] = await db.query(
@@ -241,7 +251,7 @@ export const createCheckIn = async (data) => {
         if (subActivity.sub_activity_max <= 0) {
           return {
             message: `Sub-Activity ID ${sub_activity_id} is full.`,
-            status: 401,
+            status: 409,
           };
         }
 
@@ -417,7 +427,7 @@ export const getSubAcvitityByMemberIdAndActivity = async (data) => {
     const [subactivities] = await db.query(
       `SELECT *
        FROM checkin 
-       LEFT JOIN sub_activity ON checkin.sub_activity_id = sub_activity.sub_activity_id
+       JOIN sub_activity ON checkin.sub_activity_id = sub_activity.sub_activity_id
        WHERE checkin.member_id = ? AND checkin.activity_id = ?`,
       [member_id, activity_id]
     );
@@ -431,5 +441,130 @@ export const getSubAcvitityByMemberIdAndActivity = async (data) => {
   } catch (error) {
     console.error("Error fetching data:", error);
     throw new Error("Failed to fetch data");
+  }
+};
+
+export const updateIsCheckInONActivity = async (data) => {
+  const subActivitySchema = z.object({
+    member_id: z.number().int().positive("Member ID must be positive"),
+    activity_id: z.number().int().positive("required activity id"),
+  });
+
+  const subActivityResult = subActivitySchema.safeParse(data);
+
+  if (!subActivityResult.success) {
+    throw new Error(
+      subActivityResult.error.errors.map((e) => e.message).join(", ")
+    );
+  }
+
+  const { member_id, activity_id } = subActivityResult.data;
+
+  try {
+    const [[existingCheckIn]] = await db.query(
+      `SELECT checkin_id FROM checkin 
+       WHERE member_id = ? AND activity_id = ? AND sub_activity_id IS NULL AND is_checkin = 1`,
+      [member_id, activity_id]
+    );
+
+    if (existingCheckIn) {
+      return {
+        message: "You have already checked in for this activity.",
+        status: 400,
+      };
+    }
+
+    const [result] = await db.query(
+      `UPDATE checkin SET is_checkin = 1 WHERE activity_id = ? AND member_id = ? AND sub_activity_id IS NULL`,
+      [activity_id, member_id]
+    );
+
+    const [getRewardPoint] = await db.query(
+      `SELECT reward_points FROM activity WHERE activity_id = ?`,
+      [activity_id]
+    );
+
+    console.log(getRewardPoint[0].reward_points);
+
+    const [updateMemberPoint] = await db.query(
+      `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
+      [
+        getRewardPoint[0].reward_points,
+        getRewardPoint[0].reward_points,
+        member_id,
+      ]
+    );
+
+    const [getMember] = await db.query(
+      `SELECT member_point_total, member_point_remain FROM member WHERE member_id = ?`,
+      [member_id]
+    );
+
+    return { data:getMember, message: "Check-in status updated successfully", status: 200 };
+  } catch (error) {
+    return { message: "Failed to update check-in status", status: 400 };
+  }
+};
+
+export const updateIsCheckInONSubActivity = async (data) => {
+  const subActivitySchema = z.object({
+    member_id: z.number().int().positive("Member ID must be positive"),
+    activity_id: z.number().int().positive("required activity id"),
+    sub_activity_ids: z.array(
+      z.number().int().positive("required sub activity id").nullable(true)
+    ),
+  });
+
+  const subActivityResult = subActivitySchema.safeParse(data);
+
+  if (!subActivityResult.success) {
+    throw new Error(
+      subActivityResult.error.errors.map((e) => e.message).join(", ")
+    );
+  }
+
+  const { member_id, activity_id, sub_activity_ids } = subActivityResult.data;
+  try {
+    for (const sub_activity_id of sub_activity_ids) {
+      const [[existingCheckIn]] = await db.query(
+        `SELECT checkin_id FROM checkin 
+         WHERE member_id = ? AND activity_id = ? AND sub_activity_id = ? AND is_checkin = 1`,
+        [member_id, activity_id, sub_activity_id]
+      );
+      if (existingCheckIn) {
+        return {
+          message: "You have already checked in for this sub-activity.",
+          status: 400,
+        };
+      }
+      await db.query(
+        `UPDATE checkin SET is_checkin = 1 WHERE activity_id = ? AND member_id = ? AND sub_activity_id = ?`,
+        [activity_id, member_id, sub_activity_id]
+      );
+
+      const [getRewardPoint] = await db.query(
+        `SELECT sub_activity_point FROM sub_activity WHERE sub_activity_id = ?`,
+        [sub_activity_id]
+      );
+      console.log(getRewardPoint[0].sub_activity_point);
+
+      const [updateMemberPoint] = await db.query(
+        `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
+        [
+          getRewardPoint[0].sub_activity_point,
+          getRewardPoint[0].sub_activity_point,
+          member_id,
+        ]
+      );
+      const [getMember] = await db.query(
+        `SELECT member_point_total, member_point_remain FROM member WHERE member_id = ?`,
+        [member_id]
+      );
+    }
+
+    return { message: "Check-in statuses updated successfully", status: 200 };
+  } catch (error) {
+    console.error("Error updating check-in status:", error);
+    throw new Error("Failed to update check-in status");
   }
 };
