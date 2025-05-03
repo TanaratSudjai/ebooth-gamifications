@@ -95,18 +95,21 @@ function DataListSub({ isMobile, member_id, activity_id }) {
                       className="bg-base-300 p-2 rounded-xl border-r-2 border-r-blue-300"
                     >
                       <div className="p-1 flex flex-col gap-2">
-                        <div className="bg-base-100 rounded-md px-2 py-1">
-                          บูท{" "}
-                          <span className="bg-base-300 text-blue-400 px-3 rounded-2xl">
-                            {sub.sub_activity_name}
+                        <div className="bg-base-100 rounded-md px-2 py-1 flex gap-2">
+                          <span className="bg-base-300 text-blue-300 px-3 rounded-2xl">
+                            บูท{" "}
                           </span>
+                          {sub.sub_activity_name}
                         </div>
-                        <div className="">
-                          ตำแหน่ง <br />
-                          <span className="bg-base-300 rounded-2xl">
-                            {sub.sub_activity_description}
-                          </span>
-                        </div>
+                        <p className="text-gray-400 text-left">
+                          <span className="text-blue-300">ตำแหน่ง</span>:{" "}
+                          {sub?.sub_activity_description ? (
+                            sub.sub_activity_description
+                          ) : (
+                            <span className="text-gray-500">กำลังโหลด...</span>
+                          )}
+                        </p>
+
                         <div className="">
                           คะแนนในการเข้าร่วมบูท
                           <span className="bg-base-300 px-2 rounded-2xl">
