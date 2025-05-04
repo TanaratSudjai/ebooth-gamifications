@@ -6,17 +6,17 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Ensure corr
 const activity = "activity";
 
 export async function GET(req) {
-  const session = await getServerSession({ req, ...authOptions });
+  // const session = await getServerSession({ req, ...authOptions });
 
-  if (!session) {
-    return NextResponse.json(
-      {
-        status: "unauthorized",
-        message: "You must be logged in to access this resource.",
-      },
-      { status: 401 }
-    );
-  }
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       status: "unauthorized",
+  //       message: "You must be logged in to access this resource.",
+  //     },
+  //     { status: 401 }
+  //   );
+  // }
 
   try {
     const { searchParams } = new URL(req.url);

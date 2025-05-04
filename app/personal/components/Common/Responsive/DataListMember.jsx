@@ -4,12 +4,13 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-
+import { useAlert } from "@/contexts/AlertContext";
 function DataListMember({ isMobile, activity_id }) {
   const r = useRouter();
   const ac_id = activity_id;
   const [searchText, setSearchText] = useState("");
   const [member, setMember] = useState([]);
+  const { showSuccess, showError, showWarning } = useAlert();
 
   const fetchData = async (id) => {
     try {
@@ -24,18 +25,35 @@ function DataListMember({ isMobile, activity_id }) {
   const filteredmember = member.filter((item) =>
     item.member_username.toLowerCase().includes(searchText.toLowerCase())
   );
-  const handleParams = (member_id, activity_id) => {
+  const handleParams = (member_id, activity_id, sub_id = 0) => {
     console.log(member_id, activity_id);
-    r.push(`/personal/booking/${activity_id}/sub/${member_id}`);
+    r.push(
+      `/personal/booking/${activity_id}/sub/${sub_id}/member/${member_id}`
+    );
   };
 
-  const handleCheckIn = (member_id, activity_id) => {
+  const handleCheckIn = async (member_id, activity_id) => {
     console.log(
       "สมาชิก รหัส",
       member_id,
       "เข้าร่วมกิจกรรม รหัสที่ " + Number(activity_id) + " สำเร็จ"
     );
-    // r.push(`/personal/booking/${activity_id}/sub/${member_id}`);
+    try {
+      const response = await axios.put(
+        `/api/checkin/updateCheckin/onActivity`,
+        { member_id: member_id, activity_id: activity_id }
+      );
+      if (response.status === 200) {
+        showSuccess("เช็คชื่อสำเร็จ", "เชิญเข้าร่วมงานได้เลยครับ!");
+      } else {
+        showError("เช็คชื่อผิดพลาด", "กรุณารอสักครู่!");
+      }
+    } catch (err) {
+      showError(
+        "เกิดข้อผิดพลาด",
+        err.response?.data?.message || "ไม่สามารถเช็คชื่อได้"
+      );
+    }
   };
 
   useEffect(() => {
@@ -139,7 +157,7 @@ function DataListMember({ isMobile, activity_id }) {
             >
               <table className="table">
                 <thead className="text-center">
-                  <tr className="text-blue-400 bg-white">
+                  <tr className="text-blue-400  bg-base-300">
                     <th className="text-left">ลำดับ</th>
                     <th className="text-left">รายชื่อ</th>
                     <th>ที่อยู่</th>
@@ -160,7 +178,11 @@ function DataListMember({ isMobile, activity_id }) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCheckIn(member.member_id, Number(ac_id));
+                            handleCheckIn(
+                              member.member_id,
+                              Number(ac_id),
+                              Number()
+                            );
                           }}
                           className="btn mt-2 bg-blue-400 w-auto rounded-2xl text-base-200"
                         >
@@ -179,5 +201,4 @@ function DataListMember({ isMobile, activity_id }) {
   );
 }
 
-// http://127.0.0.1:3000/api/getCheckinDetail/17/getSubAcvitity/26  กดไปดูกิจกรรมย่อยจาก id member
 export default DataListMember;

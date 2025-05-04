@@ -6,10 +6,8 @@ function page() {
   const params = useParams();
   const r = useRouter();
   const member_id = params?.member_id ?? "";
-  const activity_id = params?.activity_id ?? "";
-
-  console.log(member_id, member_id);
-
+  const activity_id = params?.mainactivity_id ?? "";
+  
   const [isMobile, setIsMobile] = useState(true);
 
   const handleResize = () => {

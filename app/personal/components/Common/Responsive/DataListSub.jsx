@@ -4,16 +4,20 @@ import ButtonBack from "../BottonBack";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import dayjs from "dayjs";
+import { useAlert } from "@/contexts/AlertContext";
+import { array } from "zod";
 function DataListSub({ isMobile, member_id, activity_id }) {
   const [searchText, setSearchText] = useState("");
   const [subActivity, setSubActivity] = useState([]);
   const [nameMain, setNameMain] = useState(null);
-
+  const { showSuccess, showError, showWarning } = useAlert();
   //   mathod
   const fetchData = async () => {
     if (member_id === null) return;
     try {
-      const res = await axios.get(`/api/getCheckinDetail/18/getSubAcvitity/46`);
+      const res = await axios.get(
+        `/api/getCheckinDetail/${member_id}/getSubAcvitity/${activity_id}`
+      );
       setSubActivity(res.data.data.activity.subactivity);
       console.log(res.data.data.activity.subactivity);
       setNameMain(res.data.data.activity.activity_name);
@@ -27,13 +31,34 @@ function DataListSub({ isMobile, member_id, activity_id }) {
     item.sub_activity_name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleCheckIn = (member_id, activity_id) => {
+  const handleCheckIn = async (sub_id) => {
     console.log(
       "สมาชิก รหัส",
-      member_id,
-      "เข้าร่วมบูท รหัสที่ " + Number(activity_id) + " สำเร็จ"
+      Number(member_id),
+      "เข้าร่วมบูท รหัสที่ " +
+        Number(sub_id) +
+        "ในกิจกรรมที่ " +
+        Number(activity_id) +
+        " สำเร็จ"
     );
-    // r.push(`/personal/booking/${activity_id}/sub/${member_id}`);
+    try {
+      if (member_id === null || activity_id === null) return;
+      const response = await axios.put(
+        `/api/checkin/updateCheckin/onSubActivity`,
+        {
+          member_id: Number(member_id),
+          activity_id: Number(activity_id),
+          sub_activity_ids: [Number(sub_id)],
+        }
+      );
+      if (response.status === 200) {
+        showSuccess("เช็คชื่อสำเร็จ", "เชิญเข้าร่วมงานได้เลยครับ!");
+      } else {
+        showError("เช็คชื่อผิดพลาด", "กรุณารอสักครู่!");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -119,10 +144,7 @@ function DataListSub({ isMobile, member_id, activity_id }) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCheckIn(
-                              Number(member_id),
-                              sub.sub_activity_id
-                            );
+                            handleCheckIn(sub.sub_activity_id);
                           }}
                           className="btn mt-2 bg-blue-400 w-auto rounded-2xl text-base-200"
                         >
@@ -170,6 +192,7 @@ function DataListSub({ isMobile, member_id, activity_id }) {
                               e.stopPropagation();
                               handleCheckIn(
                                 Number(member_id),
+                                sub.sub_activity_id,
                                 sub.sub_activity_id
                               );
                             }}
