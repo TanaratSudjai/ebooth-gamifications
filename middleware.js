@@ -19,8 +19,8 @@ export async function middleware(req) {
     }
   }
 
+  // ป้องกันไม่ให้คนที่ไม่ได้ login เข้า /api
   const isApiProtected = req.nextUrl.pathname.startsWith("/api");
-
   if (isApiProtected && !token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
