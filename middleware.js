@@ -3,31 +3,34 @@ import { NextResponse } from "next/server";
 
 export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  console.log("JWT Token:", token);
+  const path = req.nextUrl.pathname;
 
-  // ป้องกันไม่ให้คนที่ไม่ใช่ admin เข้า /admin
-  if (req.nextUrl.pathname.startsWith("/admin")) {
-    if (!token || token.role !== "admin") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+  // ✅ ยกเว้นเส้นทางที่ไม่ต้องใช้ token
+  if (path.startsWith("/api/auth") || path === "/login") {
+    return NextResponse.next();
   }
 
-  // ป้องกันไม่ให้คนที่ไม่ใช่ personal เข้า /personal
-  if (req.nextUrl.pathname.startsWith("/personal")) {
-    if (!token || token.role !== "personal") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+  // 🔒 Role-based access
+  if (path.startsWith("/admin") && (!token || token?.role !== "admin")) {
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // ป้องกันไม่ให้คนที่ไม่ได้ login เข้า /api
-  const isApiProtected = req.nextUrl.pathname.startsWith("/api");
-  if (isApiProtected && !token) {
+  if (path.startsWith("/personal") && (!token || token?.role !== "personal")) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  // 🔒 Protect API
+  if (path.startsWith("/api") && !token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   return NextResponse.next();
 }
-
 export const config = {
-  matcher: ["/admin/:path*", "/personal/:path*", "/api/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/personal/:path*",
+    "/api/:path*", // ✅ ต้องมี เพื่อคุม API
+    "/login", // ✅ ใส่เพื่อจะสามารถยกเว้นได้ใน logic
+  ],
 };
