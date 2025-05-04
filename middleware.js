@@ -19,9 +19,15 @@ export async function middleware(req) {
     }
   }
 
+  const isApiProtected = req.nextUrl.pathname.startsWith("/api");
+
+  if (isApiProtected && !token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/personal/:path*"],
+  matcher: ["/admin/:path*", "/personal/:path*", "/api/:path*"],
 };
