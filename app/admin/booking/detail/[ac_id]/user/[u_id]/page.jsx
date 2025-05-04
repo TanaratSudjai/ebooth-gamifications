@@ -72,29 +72,31 @@ function page() {
 
   const handlePayment = async () => {
     try {
-      const response = await axios.post("/api/checkin", {
-        activity_id: parseInt(activity_id),
-        member_id: parseInt(user_id),
+      const payload = {
+        activity_id: Number(activity_id),
+        member_id: Number(user_id),
         sub_activity_ids: subActivityId.map(Number),
-      });
-      const { status } = response.data;
+      };
+      const response = await axios.post("/api/checkin", payload);
+      const { status } = await response.data.status;
+      console.log("สถานะการเช็ค ", status);
       if (status === 400) {
         showWarning("ไม่สามารถเช็คอินได้", "คุณได้ทำรายการไปแล้ว");
         return;
       }
       showSuccess("สำเร็จ", "สั่งซื้อสำเร็จ");
-      document.getElementById("my_modal_1").showModal();
-      // router.push("/admin/booking");
+      document.getElementById("my_modal_1")?.showModal(); // เช็คว่ามี modal จริงหรือไม่ก่อนเรียก
     } catch (err) {
       const message =
         err?.response?.data?.message || "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์";
       showError(message);
+      console.error("Check-in error:", err); // สำหรับ debug
     }
   };
 
   const generateQRCode = async () => {
     const payload = generatePromptPayPayload({
-      mobileNumber: "0658827087",
+      mobileNumber: process.env.NEXT_PUBLIC_PROMPTPAY_NUMBER,
       amount: Number(totalPrice).toFixed(2),
     });
     QRCode.toDataURL(payload, { width: 300 }, (err, url) => {
@@ -136,7 +138,7 @@ function page() {
                 />
                 <div className="mt-5">
                   {subactivity && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1  gap-3">
                       {subactivity.map((item) => (
                         <label
                           key={item.sub_activity_id}
@@ -149,7 +151,7 @@ function page() {
                             disabled={item.sub_activity_max === 0}
                             className="peer hidden"
                           />
-                          <div className="flex-shrink-0 h-5 w-5 rounded border border-gray-300 bg-white peer-checked:bg-teal-500  mt-1"></div>
+                          <div className="flex-shrink-0 h-5 w-5 rounded border border-gray-300 bg-white peer-checked:bg-amber-400  mt-1"></div>
                           <div className="text-sm text-gray-800 leading-relaxed">
                             <p className="font-semibold">
                               {item.sub_activity_name}
@@ -234,12 +236,12 @@ function page() {
                     **
                   </h3>
 
-                  <div className="w-full justify-center flex">
+                  <div className="w-full h-full justify-center flex">
                     <button
                       onClick={() => {
                         handlePayment();
                       }}
-                      className="btn bg-gradient-to-r from-teal-500 to-cyan-500 border-none  w-auto"
+                      className="btn bg-gradient-to-r from-amber-300 to-amber-500 border-none  w-auto"
                     >
                       ยืนยันการจองเเละชำระเงิน
                     </button>
