@@ -217,7 +217,7 @@ export const getMemberByActivityId = async (activity_id) => {
 
     const [rows] = await db.query(
       `
-      SELECT member.* from checkin left join member on checkin.member_id = member.member_id 
+      SELECT member.*,MAX(checkin.is_checkin) AS is_checkin from checkin left join member on checkin.member_id = member.member_id 
       WHERE activity_id = ? group by member.member_id
       `,
       [activity_id]
@@ -247,7 +247,7 @@ export const getMemberBySubActivityId = async (subActivity_id) =>{
 
     const [rows] = await db.query(
       `
-      SELECT member.* from checkin left join member on checkin.member_id = member.member_id
+      SELECT member.*,MAX(checkin.is_checkin) AS is_checkin from checkin left join member on checkin.member_id = member.member_id
       WHERE sub_activity_id = ? group by member.member_id
       `,
       [subActivity_id]
