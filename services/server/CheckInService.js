@@ -24,6 +24,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
         checkin.activity_id, 
         checkin.sub_activity_id, 
         checkin.checkin_time, 
+        checkin.is_checkin,
         activity.activity_name, 
         activity.activity_description, 
         activity.activity_max,
@@ -60,6 +61,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
         sub_activity_description,
         sub_activity_max,
         checkin_time,
+        is_checkin,
       } = row;
 
       if (!activityMap[activity_id]) {
@@ -69,6 +71,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
           activity_description,
           activity_max,
           checkin_time,
+          is_checkin,
           sub_activities: [],
         };
       }
@@ -80,6 +83,7 @@ export const getCheckInWithUserId = async (id, page = 1, limit = 10) => {
           sub_activity_description,
           sub_activity_max,
           checkin_time,
+          is_checkin,
         });
       }
     }
@@ -500,7 +504,11 @@ export const updateIsCheckInONActivity = async (data) => {
       [member_id]
     );
 
-    return { data:getMember, message: "Check-in status updated successfully", status: 200 };
+    return {
+      data: getMember,
+      message: "Check-in status updated successfully",
+      status: 200,
+    };
   } catch (error) {
     return { message: "Failed to update check-in status", status: 400 };
   }
