@@ -146,6 +146,7 @@ function page() {
                             type="checkbox"
                             onChange={handleCheckboxChange}
                             value={item.sub_activity_id.toString()}
+                            disabled={item.sub_activity_max === 0}
                             className="peer hidden"
                           />
                           <div className="flex-shrink-0 h-5 w-5 rounded border border-gray-300 bg-white peer-checked:bg-teal-500  mt-1"></div>
@@ -159,8 +160,16 @@ function page() {
                             <p className="text-gray-700">
                               ราคา: {item.sub_activity_price} บาท
                             </p>
-                            <p className="text-gray-700">
-                              จำนวนสูงสุด: {item.sub_activity_max} คน
+                            <p
+                              className={`${
+                                item.sub_activity_max > 0
+                                  ? "text-green-500  bg-green-50 px-2 py-1 rounded"
+                                  : "text-red-500  bg-red-50 px-2 py-1 rounded"
+                              }`}
+                            >
+                              {item.sub_activity_max > 0
+                                ? `จำนวนสูงสุด: ${item.sub_activity_max} คน`
+                                : "จำนวนเข้าร่วมเต็มเเล้ว"}
                             </p>
                             <p className="text-gray-500">
                               เริ่ม:{" "}

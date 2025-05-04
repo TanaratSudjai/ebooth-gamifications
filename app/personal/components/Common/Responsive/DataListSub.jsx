@@ -146,9 +146,15 @@ function DataListSub({ isMobile, member_id, activity_id }) {
                             e.stopPropagation();
                             handleCheckIn(sub.sub_activity_id);
                           }}
-                          className="btn mt-2 bg-blue-400 w-auto rounded-2xl text-base-200"
+                          disabled={sub.is_checkin}
+                          className={`btn mt-2 w-auto rounded-2xl text-base-200 
+                              ${
+                                sub.is_checkin
+                                  ? "bg-gray-400 cursor-not-allowed text-white"
+                                  : "bg-blue-400 hover:bg-blue-500"
+                              }`}
                         >
-                          เช็คชื่อ
+                          {sub.is_checkin ? "เช็คชื่อแล้ว" : "เช็คชื่อ"}
                         </button>
                       </div>
                     </div>
@@ -190,15 +196,17 @@ function DataListSub({ isMobile, member_id, activity_id }) {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleCheckIn(
-                                Number(member_id),
-                                sub.sub_activity_id,
-                                sub.sub_activity_id
-                              );
+                              handleCheckIn(sub.sub_activity_id);
                             }}
-                            className="btn mt-2 bg-blue-400 w-auto rounded-2xl text-base-200"
+                            disabled={sub.is_checkin}
+                            className={`btn mt-2 w-auto rounded-2xl text-base-200 
+                              ${
+                                sub.is_checkin
+                                  ? "bg-gray-400 cursor-not-allowed text-white"
+                                  : "bg-blue-400 hover:bg-blue-500"
+                              }`}
                           >
-                            เช็คชื่อ
+                            {sub.is_checkin ? "เช็คชื่อแล้ว" : "เช็คชื่อ"}
                           </button>
                         </td>
                       </tr>

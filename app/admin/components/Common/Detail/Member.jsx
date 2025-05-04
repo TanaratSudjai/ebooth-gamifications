@@ -23,7 +23,7 @@ function Member({ id = "" }) {
       const response = await axios.get(`/api/checkin/${id}`);
       setMember(response.data.data);
       setCheckIn(response.data.data.member.checkin);
-      console.log(response.data.data.member.checkin);
+      console.log(response.data.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -107,14 +107,10 @@ function Member({ id = "" }) {
                 <div className="flex items-center">
                   <Award className="mr-2 text-amber-500" size={18} />
                   <div>
-                    <span className="font-medium text-gray-700">แต้มสะสม:</span>
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-700">แต้มสะสม</span>
                       <span className="text-lg font-semibold text-amber-500">
                         {member.member.member_point_remain}
-                      </span>
-                      <span className="text-gray-500 mx-1">/</span>
-                      <span className="text-gray-600">
-                        {member.member.member_point_total}
                       </span>
                     </div>
                   </div>
@@ -153,7 +149,7 @@ function Member({ id = "" }) {
 
             <div className=" p-4 overflow-y-auto max-h-[600px]">
               {Array.isArray(checkIn) && checkIn.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {checkIn.map((checkIn, index) => (
                     <div
                       key={index}
@@ -212,9 +208,17 @@ function Member({ id = "" }) {
 
                           <button
                             onClick={() => handleCheckIn(checkIn.activity_id)}
-                            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center"
+                            disabled={checkIn.is_checkin === 1}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center
+                                ${
+                                  checkIn.is_checkin === 1
+                                    ? "bg-gray-200 cursor-not-allowed"
+                                    : "bg-amber-500 hover:bg-amber-600 text-white"
+                                }`}
                           >
-                            เช็คอิน
+                            {checkIn.is_checkin === 1
+                              ? "เช็คอินแล้ว"
+                              : "เช็คอิน"}
                           </button>
                         </div>
                       </div>

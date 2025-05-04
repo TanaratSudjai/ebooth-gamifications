@@ -16,6 +16,8 @@ function DataListMember({ isMobile, activity_id }) {
     try {
       const res = await axios.get(`/api/personnel/getMemberByActivityId/${id}`);
       setMember(res.data.data.members);
+      console.log(res.data.data.members);
+
       // console.log(res.data.data.members);
     } catch (err) {
       console.log(err);
@@ -135,9 +137,15 @@ function DataListMember({ isMobile, activity_id }) {
                               e.stopPropagation();
                               handleCheckIn(member.member_id, Number(ac_id));
                             }}
-                            className="btn bg-blue-400 w-auto rounded-2xl text-base-200"
+                            disabled={member.is_checkin}
+                            className={`btn mt-2 w-auto rounded-2xl text-base-200 
+                              ${
+                                member.is_checkin
+                                  ? "bg-gray-400 text-white cursor-not-allowed"
+                                  : "bg-blue-400 hover:bg-blue-500"
+                              }`}
                           >
-                            เช็คชื่อ
+                            {member.is_checkin ? "เช็คชื่อแล้ว" : "เช็คชื่อ"}
                           </button>
                         </span>
                       </div>
@@ -178,15 +186,17 @@ function DataListMember({ isMobile, activity_id }) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCheckIn(
-                              member.member_id,
-                              Number(ac_id),
-                              Number()
-                            );
+                            handleCheckIn(member.member_id, Number(ac_id));
                           }}
-                          className="btn mt-2 bg-blue-400 w-auto rounded-2xl text-base-200"
+                          disabled={member.is_checkin}
+                          className={`btn mt-2 w-auto rounded-2xl text-base-200 
+                              ${
+                                member.is_checkin
+                                  ? "bg-gray-400 text-white cursor-not-allowed"
+                                  : "bg-blue-400 hover:bg-blue-500"
+                              }`}
                         >
-                          เช็คชื่อ
+                          {member.is_checkin ? "เช็คชื่อแล้ว" : "เช็คชื่อ"}
                         </button>
                       </td>
                     </tr>
