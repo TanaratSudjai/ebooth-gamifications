@@ -16,7 +16,7 @@ export default function RedirectAfterLogin() {
         } else if (session?.user?.role === "personal") {
           router.replace("/personal/management");
         } else {
-          router.replace("/member/dashboard");
+          router.replace("/member");
         }
       }, 1500);
       return () => clearTimeout(timer);
