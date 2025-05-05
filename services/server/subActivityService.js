@@ -216,7 +216,7 @@ export const checkin = async (data) => {
         [sub_activity_id, member_id, activity_id]
       );
 
-      return "Check-in updated successfully";
+      return {message : "Check-in updated successfully",status: 200};
     }
 
     if (checkinRows.length === 0) {
@@ -226,7 +226,7 @@ export const checkin = async (data) => {
       );
 
       if (checkSubActivityMax.length > 0) {
-        return "Sub activity is full or not found";
+        return {message : "Sub activity is full or not found", status: 400};
       }
 
       const [checkSubactivityPrice] = await db.query(
@@ -235,14 +235,14 @@ export const checkin = async (data) => {
       );
 
       if (checkSubactivityPrice.length > 0) {
-        return "Not Allowed it not free";
+        return {message : "Not Allowed it not free", status: 400};
       } 
 
       const [insertCheckIn] = await db.query(
         "INSERT INTO checkin ( member_id, activity_id,sub_activity_id, checkin_time, is_checkin) VALUES (?, ?, ?, NOW(),?)",
         [member_id, activity_id,sub_activity_id, 1]
       );
-      return "Check-in successful";
+      return {messgae : "Check-in successful", status: 200};
     }
 
   } catch (error) {
