@@ -14,6 +14,7 @@ import { GrNext } from "react-icons/gr";
 import { MdArrowBackIos } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { toSQLDatetimeFormat } from "@/utils/formatdatelocal";
 function ActivityData() {
   const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -46,12 +47,14 @@ function ActivityData() {
     activity_id: parseInt(selectedId),
     sub_activity_name: formData.sub_activity_name,
     sub_activity_description: formData.sub_activity_description,
-    sub_activity_start: formData.sub_activity_start,
-    sub_activity_end: formData.sub_activity_end,
+    // แปลงวันที่ให้เป็นฟอร์แมตที่ MySQL รองรับ (YYYY-MM-DD HH:MM:SS)
+    sub_activity_start: toSQLDatetimeFormat(formData.sub_activity_start), // ใช้เพื่อแปลงก่อนส่งไปฐานข้อมูล
+    sub_activity_end: toSQLDatetimeFormat(formData.sub_activity_end),
     sub_activity_max: Number(formData.sub_activity_max),
     sub_activity_point: Number(formData.sub_activity_point),
     sub_activity_price: Number(formData.sub_activity_price),
   };
+
   // _-----
   const onChange = (e) => {
     e.preventDefault();
@@ -252,7 +255,7 @@ function ActivityData() {
                     </button>
 
                     {!activity.sub_activity_count ||
-                    activity.sub_activity_count === 0 ? (
+                      activity.sub_activity_count === 0 ? (
                       <div className=""></div>
                     ) : (
                       <button

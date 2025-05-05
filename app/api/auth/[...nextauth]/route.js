@@ -19,9 +19,9 @@ export const authOptions = {
         const { email, password } = credentials;
 
         try {
-          // ตรวจสอบข้อมูลในตาราง `member`
+          // ตรวจสอบข้อมูลในตาราง member
           const [memberRows] = await pool.query(
-            "SELECT * FROM member WHERE member_email = ?",
+            "SELECT * FROM member WHERE member_email = ? AND (is_admin = 1 OR is_admin = 0)",
             [email]
           );
 
@@ -33,14 +33,18 @@ export const authOptions = {
             );
             if (!isPasswordValid) return null;
 
+            // ตรวจสอบว่าเป็นแอดมินหรือไม่
+            const role = user.is_admin === 1 ? "admin" : "member";
+
             return {
               id: user.member_id,
               username: user.member_username,
               email: user.member_email,
-              role: "admin",
+              role: role,  // ส่งค่า role ตาม is_admin
               is_admin: user.is_admin,
             };
           }
+
 
           // ตรวจสอบข้อมูลในตาราง `personnel`
           const [personalRows] = await pool.query(

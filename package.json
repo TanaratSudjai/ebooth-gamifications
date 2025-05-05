@@ -20,6 +20,7 @@
     "mysql2": "^3.14.0",
     "next": "15.3.1",
     "next-auth": "^4.24.11",
+    "part": "^0.1.1",
     "promptpay-qr": "^0.5.0",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
