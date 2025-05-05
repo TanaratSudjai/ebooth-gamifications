@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { signOut, useSession } from "next-auth/react";
 import axios from "axios";
@@ -6,41 +7,49 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 
 function Page() {
   const { data: session } = useSession();
-  const [subActivity, setSubActivity] = useState([]);
+  const [subActivities, setSubActivities] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [form, setForm] = useState({
-    activity_id: '',
-    sub_activity_id: '',
-    member_id: ''
+    activity_id: "",
+    sub_activity_id: "",
+    member_id: "",
   });
 
   const inputRef = useRef(null);
 
-  const fetchSubActivities = async () => {
-    const res = await axios.get("/api/subActivity");
-    setSubActivity(res.data.data);
-  };
-
   useEffect(() => {
-    if (form.activity_id && form.sub_activity_id && form.member_id) {
-      console.log("🚀 ส่ง payload นี้ไปใช้งาน:", form);
-
-      // ถ้าจะส่งไป API
-      // axios.post("/api/your-endpoint", form)
-      //   .then((res) => console.log("✅ POST success", res.data))
-      //   .catch((err) => console.error("❌ POST failed", err));
-    }
-  }, [form]);
-
-
-
-  useEffect(() => {
+    const fetchSubActivities = async () => {
+      try {
+        const res = await axios.get("/api/subActivity");
+        setSubActivities(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch sub activities:", err);
+      }
+    };
     fetchSubActivities();
   }, []);
 
+  useEffect(() => {
+    const sendCheckIn = async () => {
+      if (form.activity_id && form.sub_activity_id && form.member_id) {
+        console.log("🚀 Sending payload:", form);
+        try {
+          await axios.post("/api/checkin/ifCheckIn", {
+            activity_id: form.activity_id,
+            member_id:form.member_id,
+            sub_activity_id: form.sub_activity_id
+          });
+          console.log("✅ Check-in successful!");
+        } catch (error) {
+          console.error("❌ Check-in failed:", error);
+        }
+      }
+    };
+    sendCheckIn();
+  }, [form]);
+
   const startScan = () => {
     if (scanning) return;
-
     setScanning(true);
 
     const scanner = new Html5QrcodeScanner("qr-reader", {
@@ -51,19 +60,18 @@ function Page() {
     scanner.render(
       (decodedText) => {
         if (inputRef.current) {
-          inputRef.current.value = decodedText + " / " + session?.user.id;
+          inputRef.current.value = `${decodedText} / ${session?.user.id}`;
 
           const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
 
-          if (numbers.length >= 0 && session?.user?.id) {
+          if (numbers.length >= 2 && session?.user?.id) {
             const newForm = {
               activity_id: numbers[0],
               sub_activity_id: numbers[1],
               member_id: session.user.id,
             };
-
             setForm(newForm);
-            console.log("✅ Form payload:", newForm); // ✅ Log form
+            console.log("✅ Form updated:", newForm);
           }
         }
 
@@ -71,48 +79,74 @@ function Page() {
         setScanning(false);
       },
       (error) => {
-        // QR not matched
+        // Optional: handle scan errors
       }
     );
   };
 
   return (
-    <div className="bg-white text-black flex gap-4 flex-col p-4">
-      {/* QR Scanner */}
-      <div>
-        <button onClick={startScan} className="bg-blue-500 text-white px-4 py-2 rounded">Request Camera</button>
-        <input type="text" ref={inputRef} className="border p-2 mt-2 w-full" readOnly />
+    <div className="bg-white text-black flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+      {/* QR Scanner Section */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">QR Code Scanner</h2>
+        <button
+          onClick={startScan}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        >
+          Start Scanning
+        </button>
+        <input
+          type="text"
+          ref={inputRef}
+          readOnly
+          className="border p-2 mt-2 w-full bg-gray-100"
+        />
         <div id="qr-reader" className="mt-4" />
-      </div>
+      </section>
 
-      {/* User Info */}
-      <div>
-        <h1>Member Page</h1>
-        <h2>Welcome, {session?.user.username}</h2>
-        <h3>Email: {session?.user.email}</h3>
-        <h3>ID: {session?.user.id}</h3>
-        <h3>EXP: {session?.user.exp}</h3>
-        <h3>Points: {session?.user.point_total} (Remain: {session?.user.point_remain})</h3>
-        <h3>Address: {session?.user.address}</h3>
-        <h3>Admin: {session?.user.is_admin ? "Yes" : "No"}</h3>
-        <button onClick={() => signOut({ callbackUrl: "/" })} className="mt-2 bg-red-500 text-white px-4 py-2 rounded">Logout</button>
-      </div>
+      {/* User Info Section */}
+      {session?.user && (
+        <section className="bg-gray-100 p-4 rounded">
+          <h2 className="text-xl font-semibold mb-2">Member Info</h2>
+          <p><strong>Username:</strong> {session.user.username}</p>
+          <p><strong>Email:</strong> {session.user.email}</p>
+          <p><strong>ID:</strong> {session.user.id}</p>
+          <p><strong>EXP:</strong> {session.user.exp}</p>
+          <p><strong>Points:</strong> {session.user.point_total} (Remain: {session.user.point_remain})</p>
+          <p><strong>Address:</strong> {session.user.address}</p>
+          <p><strong>Admin:</strong> {session.user.is_admin ? "Yes" : "No"}</p>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </section>
+      )}
 
-      {/* Sub Activity List */}
-      <div>
-        {subActivity.length === 0 ? (
+      {/* Sub Activities Section */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Sub Activities</h2>
+        {subActivities.length === 0 ? (
           <p>Loading sub-activities...</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {subActivity.map((item) => (
-              <div className="border p-2" key={item.sub_activity_id}>
-                <h1>{item.sub_activity_name}</h1>
-                <img src={item.qr_image_url} alt="" className="w-32" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {subActivities.map((item) => (
+              <div
+                key={item.sub_activity_id}
+                className="border p-2 rounded shadow-sm text-center"
+              >
+                <h3 className="font-medium mb-2">{item.sub_activity_name}</h3>
+                <img
+                  src={item.qr_image_url}
+                  alt={item.sub_activity_name}
+                  className="w-28 mx-auto"
+                />
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
