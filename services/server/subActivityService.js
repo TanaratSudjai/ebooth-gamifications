@@ -66,7 +66,7 @@ export const createSubActivity = async (data) => {
       [sub_activity_id]
     );
 
-    const qrData = `/api/checkin/updateCheckin/${sub_activity_id}/${sub_activity_id}`;
+    const qrData = `main,${activity_id} ,sub,${sub_activity_id}`;
     const qrImagePath = path.join(process.cwd(), 'public', 'qrcodes', `${sub_activity_id}.png`);
 
     const qrFolder = path.dirname(qrImagePath);
