@@ -53,6 +53,7 @@ function DataListSub({ isMobile, member_id, activity_id }) {
       );
       if (response.status === 200) {
         showSuccess("เช็คชื่อสำเร็จ", "เชิญเข้าร่วมงานได้เลยครับ!");
+        fetchData();
       } else {
         showError("เช็คชื่อผิดพลาด", "กรุณารอสักครู่!");
       }
