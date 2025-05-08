@@ -460,6 +460,7 @@ CREATE TABLE `sub_activity`  (
   `sub_activity_max` int NULL DEFAULT NULL,
   `sub_activity_point` int NULL DEFAULT NULL,
   `sub_activity_price` int NULL DEFAULT NULL,
+  `qr_image_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL
   PRIMARY KEY (`sub_activity_id`) USING BTREE,
   INDEX `idx_activity_id`(`activity_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
