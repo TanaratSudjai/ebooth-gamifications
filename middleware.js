@@ -18,6 +18,7 @@ export async function middleware(req) {
   if (path.startsWith("/personal") && (!token || token?.role !== "personal")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
+
   if (path.startsWith("/member") && (!token || token?.role !== "member")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
