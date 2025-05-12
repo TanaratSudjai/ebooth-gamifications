@@ -78,8 +78,7 @@ function page() {
         sub_activity_ids: subActivityId.map(Number),
       };
       const response = await axios.post("/api/checkin", payload);
-      const { status } = await response.data.status;
-      console.log("สถานะการเช็ค ", status);
+      const { status } = await response.data;
       if (status === 400) {
         showWarning("ไม่สามารถเช็คอินได้", "คุณได้ทำรายการไปแล้ว");
         return;

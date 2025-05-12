@@ -108,7 +108,9 @@ function Member({ id = "" }) {
                   <Award className="mr-2 text-amber-500" size={18} />
                   <div>
                     <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-700">แต้มสะสม</span>
+                      <span className="font-medium text-gray-700">
+                        แต้มสะสม
+                      </span>
                       <span className="text-lg font-semibold text-amber-500">
                         {member.member.member_point_remain}
                       </span>
