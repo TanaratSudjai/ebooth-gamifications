@@ -5,7 +5,7 @@ import { z } from "zod"; // ใช้สำหรับการตรวจส�
 export const createPersonnel = async (data) => {
   try {
     const PersonnelSchema = z.object({
-      personnel_name: z.string().min(3, "Name is too short"),
+      personnel_name: z.string().min(2, "Name is too short"),
       personnel_address: z.string().min(1, "Address is required"),
       personnel_tel: z
         .string()

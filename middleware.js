@@ -6,11 +6,11 @@ export async function middleware(req) {
   const path = req.nextUrl.pathname;
   console.log(token);
 
-  // ✅ ยกเว้นเส้นทางที่ไม่ต้องใช้ token
+
   if (path.startsWith("/api/auth") || path === "/login") {
     return NextResponse.next();
   }
-  // 🔒 Role-based access
+ 
   if (path.startsWith("/admin") && (!token || token?.role !== "admin")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
