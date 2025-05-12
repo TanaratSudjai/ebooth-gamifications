@@ -207,7 +207,7 @@ function page() {
                     <p>ค่าใช้จ่าย {sub.sub_activity_price} บาท</p>
                     <img src={sub.qr_image_url} alt="" className="w-32" />
 
-                    <div className="flex w-full justify-around">
+                    <div className="flex w-full gap-2 justify-around">
                     <a
                       href={sub.qr_image_url}
                       download

@@ -71,17 +71,17 @@ export const createPersonnel = async (data) => {
 };
 
 export const getPersonnelById = async (id) => {
-  try{
+  try {
 
     const [rows] = await db.query(
       "SELECT * FROM personnel WHERE personnel_id = ?",
       [id]
     );
-  
+
     if (rows.length === 0) {
       throw new Error("Personnel not found");
     }
-  
+
     return rows[0]; // Return the first profile
   } catch (error) {
     console.error("❌ getPersonnelById error:", error);
@@ -225,11 +225,11 @@ export const getMemberByActivityId = async (activity_id) => {
 
     return {
       data: {
-        activity: activityRows[0], 
+        activity: activityRows[0],
         memberCount: rows.length,
-        members: rows, 
+        members: rows,
       }
-      
+
     };
   } catch (error) {
     console.error("Error fetching members by activity ID:", error);
@@ -237,7 +237,7 @@ export const getMemberByActivityId = async (activity_id) => {
   }
 }
 
-export const getMemberBySubActivityId = async (subActivity_id) =>{
+export const getMemberBySubActivityId = async (subActivity_id) => {
   try {
 
     const [[subActivityRows]] = await db.query(
@@ -255,9 +255,9 @@ export const getMemberBySubActivityId = async (subActivity_id) =>{
 
     return {
       data: {
-        subActivity: subActivityRows, 
+        subActivity: subActivityRows,
         memberCount: rows.length,
-        members: rows, 
+        members: rows,
 
       }
     };
