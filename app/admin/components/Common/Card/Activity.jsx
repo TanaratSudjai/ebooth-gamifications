@@ -34,7 +34,7 @@ function Activity({
       className="w-full cursor-pointer rounded-lg overflow-hidden shadow-md bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-3">
+      <div className="bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3">
         <h2 className="font-bold text-lg flex justify-between items-center text-white truncate">
           {activity_name}
           <span className="text-xs font-medium">
@@ -65,7 +65,7 @@ function Activity({
           </div>
           <div>
             <p className="font-semibold text-gray-800">ราคา:</p>
-            <p className="text-teal-600 font-medium">
+            <p className="text-gray-600 font-medium">
               {activity_price ? `${activity_price} บาท` : "ฟรี"}
             </p>
           </div>

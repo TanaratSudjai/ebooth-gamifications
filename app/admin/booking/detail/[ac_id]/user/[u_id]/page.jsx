@@ -10,6 +10,7 @@ import { TiShoppingCart } from "react-icons/ti";
 import { array } from "zod";
 import QRCode from "qrcode";
 import { generatePromptPayPayload } from "@/utils/promptpay";
+import { useMemo } from "react";
 function page() {
   // lazy loading
   const params = useParams();
@@ -25,6 +26,21 @@ function page() {
   const [subActivityId, setSubActivityId] = useState([]);
   const [payment, setPayment] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState("");
+
+  const totalPrice = useMemo(() => {
+    if (!activity || !subactivity) return 0;
+    return (
+      Number(activity.activity_price) +
+      subActivityId.reduce((total, id) => {
+        const selected = subactivity.find(
+          (item) => item.sub_activity_id.toString() === id
+        );
+        return total + (selected ? Number(selected.sub_activity_price) : 0);
+      }, 0)
+    );
+  }, [activity, subactivity, subActivityId]);
+
+  console.log(totalPrice);
 
   const handleCheckboxChange = (e) => {
     const { checked, value } = e.target;
@@ -45,8 +61,8 @@ function page() {
         `/api/subActivity/getSubByActivity/${activity_id}`
       );
       const response_activity = await axios.get(`/api/activity/${activity_id}`);
-      setSubActivity(response_subactivity.data.data);
-      setActivity(response_activity.data);
+      setActivity(response_activity.data || {});
+      setSubActivity(response_subactivity.data.data || []);
       console.log(response_subactivity.data.data);
       console.log(response_activity.data);
     } catch (err) {
@@ -56,40 +72,47 @@ function page() {
 
   const handlePayment = async () => {
     try {
-      const response = await axios.post("/api/checkin", {
-        activity_id: parseInt(activity_id),
-        member_id: parseInt(user_id),
+      const payload = {
+        activity_id: Number(activity_id),
+        member_id: Number(user_id),
         sub_activity_ids: subActivityId.map(Number),
-      });
-      const { status } = response.data;
+      };
+      const response = await axios.post("/api/checkin", payload);
+      const { status } = await response.data;
       if (status === 400) {
         showWarning("ไม่สามารถเช็คอินได้", "คุณได้ทำรายการไปแล้ว");
         return;
       }
       showSuccess("สำเร็จ", "สั่งซื้อสำเร็จ");
-      document.getElementById("my_modal_1").showModal();
-      // router.push("/admin/booking");
+      document.getElementById("my_modal_1")?.showModal(); // เช็คว่ามี modal จริงหรือไม่ก่อนเรียก
     } catch (err) {
       const message =
         err?.response?.data?.message || "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์";
       showError(message);
+      console.error("Check-in error:", err); // สำหรับ debug
     }
   };
 
-  useEffect(() => {
+  const generateQRCode = async () => {
     const payload = generatePromptPayPayload({
-      mobileNumber: "0658827087", // เบอร์มือถือ PromptPay
-      amount: 100.0,
+      mobileNumber: process.env.NEXT_PUBLIC_PROMPTPAY_NUMBER,
+      amount: Number(totalPrice).toFixed(2),
     });
     QRCode.toDataURL(payload, { width: 300 }, (err, url) => {
       if (!err) {
         setQrDataUrl(url);
       }
     });
+  };
+
+  useEffect(() => {
+    setPayment(totalPrice);
+    generateQRCode();
+
     if (activity_id && user_id) {
       fetchData();
     }
-  }, [activity_id, user_id]);
+  }, [activity_id, user_id, totalPrice]);
 
   return (
     <div>
@@ -114,7 +137,7 @@ function page() {
                 />
                 <div className="mt-5">
                   {subactivity && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1  gap-3">
                       {subactivity.map((item) => (
                         <label
                           key={item.sub_activity_id}
@@ -124,9 +147,10 @@ function page() {
                             type="checkbox"
                             onChange={handleCheckboxChange}
                             value={item.sub_activity_id.toString()}
+                            disabled={item.sub_activity_max === 0}
                             className="peer hidden"
                           />
-                          <div className="flex-shrink-0 h-5 w-5 rounded border border-gray-300 bg-white peer-checked:bg-teal-500  mt-1"></div>
+                          <div className="flex-shrink-0 h-5 w-5 rounded border border-gray-300 bg-white peer-checked:bg-amber-400  mt-1"></div>
                           <div className="text-sm text-gray-800 leading-relaxed">
                             <p className="font-semibold">
                               {item.sub_activity_name}
@@ -137,8 +161,16 @@ function page() {
                             <p className="text-gray-700">
                               ราคา: {item.sub_activity_price} บาท
                             </p>
-                            <p className="text-gray-700">
-                              จำนวนสูงสุด: {item.sub_activity_max} คน
+                            <p
+                              className={`${
+                                item.sub_activity_max > 0
+                                  ? "text-green-500  bg-green-50 px-2 py-1 rounded"
+                                  : "text-red-500  bg-red-50 px-2 py-1 rounded"
+                              }`}
+                            >
+                              {item.sub_activity_max > 0
+                                ? `จำนวนสูงสุด: ${item.sub_activity_max} คน`
+                                : "จำนวนเข้าร่วมเต็มเเล้ว"}
                             </p>
                             <p className="text-gray-500">
                               เริ่ม:{" "}
@@ -199,28 +231,16 @@ function page() {
                 <div className="flex flex-col gap-2">
                   {/* ราคารวมทั้งหมด = กิจกรรมหลัก + กิจกรรมย่อย */}
                   <h3 className="font-semibold mb-2 mt-5 px-10 w-full justify-center flex">
-                    ** ราคารวมทั้งหมด{" "}
-                    {(
-                      Number(activity.activity_price) +
-                      subActivityId.reduce((total, id) => {
-                        const selected = subactivity.find(
-                          (item) => item.sub_activity_id.toString() === id
-                        );
-                        return (
-                          total +
-                          (selected ? Number(selected.sub_activity_price) : 0)
-                        );
-                      }, 0)
-                    ).toLocaleString("th-TH")}{" "}
-                    บาท **{" "}
+                    ** ราคารวมทั้งหมด {totalPrice.toLocaleString("th-TH")} บาท
+                    **
                   </h3>
 
-                  <div className="w-full justify-center flex">
+                  <div className="w-full h-full justify-center flex">
                     <button
                       onClick={() => {
                         handlePayment();
                       }}
-                      className="btn bg-gradient-to-r from-teal-500 to-cyan-500 border-none  w-auto"
+                      className="btn bg-gradient-to-r from-amber-300 to-amber-500 border-none  w-auto"
                     >
                       ยืนยันการจองเเละชำระเงิน
                     </button>
@@ -232,13 +252,18 @@ function page() {
         )}
       </div>
       <dialog id="my_modal_1" className="modal">
-        <div className="modal-box bg-white flex flex-col justify-center items-center">
-          {" "}
-          <h1 className="font-bold">รีบโอนรีบไปตายไป ไอ้ควาย</h1>
+        <div className="modal-box bg-white p-6 rounded-xl shadow-lg flex flex-col justify-center items-center space-y-4">
+          <h1 className="text-lg font-bold text-center text-gray-800">
+            QR Code จ่ายเงินค่าเข้าร่วมกิจกรรม
+          </h1>
           {qrDataUrl ? (
-            <img src={qrDataUrl} alt="PromptPay QR Code" />
+            <img
+              src={qrDataUrl}
+              alt="PromptPay QR Code"
+              className="w-48 h-48 rounded-md shadow-md border border-gray-300"
+            />
           ) : (
-            <p>กำลังสร้าง QR...</p>
+            <p className="text-gray-500">กำลังสร้าง QR...</p>
           )}
         </div>
       </dialog>

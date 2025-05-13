@@ -12,6 +12,7 @@ import {
 } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
 function page() {
   const router = useRouter();
   const params = useParams();
@@ -136,6 +137,7 @@ function page() {
       [name]: type === "number" ? Number(value) : value,
     }));
   };
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col justify-start md:flex-row gap-10 items-center mb-4">
@@ -203,7 +205,18 @@ function page() {
                       <p>คะแนนที่ได้จากภารกิจ {sub.sub_activity_point} เเต้ม</p>
                     </div>
                     <p>ค่าใช้จ่าย {sub.sub_activity_price} บาท</p>
-                    <div className="flex w-full justify-around">
+                    <img src={sub.qr_image_url} alt="" className="w-32" />
+
+                    <div className="flex w-full gap-2 justify-around">
+                    <a
+                      href={sub.qr_image_url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-amber-300 p-1 border w-full text-black rounded-md cursor-pointer text-center"
+                    >
+                      ดาวน์โหลด QR
+                    </a>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
