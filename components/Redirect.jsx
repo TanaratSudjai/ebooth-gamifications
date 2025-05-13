@@ -6,12 +6,15 @@ import { useRouter } from "next/navigation";
 export default function RedirectAfterLogin() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  console.log(session?.user?.role);
 
   useEffect(() => {
     if (status === "authenticated") {
       const timer = setTimeout(() => {
-        if (session?.user?.is_admin) {
+        if (session?.user?.role === "admin") {
           router.replace("/admin/dashboard");
+        } else if (session?.user?.role === "personal") {
+          router.replace("/personal/management");
         } else {
           router.replace("/member");
         }
@@ -20,7 +23,7 @@ export default function RedirectAfterLogin() {
     } else if (status === "unauthenticated") {
       const timer = setTimeout(() => {
         router.replace("/");
-      }, 1500);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [status, session, router]);

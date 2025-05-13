@@ -173,7 +173,7 @@ function DashboardTemplate({ children }) {
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="btn btn-neutral rounded-lg"
               >
-                SING OUT
+                ออกจากระบบ
               </button>
             </li>
           </ul>

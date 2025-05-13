@@ -1,6 +1,7 @@
 import {
   getCheckInWithUserId,
   deleteCheckIn,
+  updateCheckIn,
 } from "@/services/server/CheckInService";
 
 import { NextResponse } from "next/server";
@@ -30,8 +31,10 @@ export async function DELETE(req, { params }) {
   try {
     const id = Number(params.id);
     const res = await deleteCheckIn(id);
-    return NextResponse.json(res, { status: 200 });
+    return NextResponse.json(res, { status: res.data.status });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+
+

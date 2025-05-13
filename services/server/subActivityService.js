@@ -1,12 +1,14 @@
 import db from "./db"; // ใช้ mysql2/promise connection
 import { z } from "zod"; // ใช้สำหรับการตรวจสอบข้อมูล
-
+const path = require("path"); // เพิ่มการ require โมดูล path
+const fs = require("fs");
+const QRCode = require("qrcode"); // โมดูลสำหรับการสร้าง QR Code
 export const createSubActivity = async (data) => {
   try {
     const subActivitySchema = z.object({
       sub_activity_name: z.string().min(3, "subActivity name is too short"),
       activity_id: z.number().min(1, "Activity ID is required"),
-      sub_activity_description: z.string().min(1, "Invalid description"), // fixed the `min` usage here
+      sub_activity_description: z.string().min(1, "Invalid description"),
       sub_activity_start: z
         .string()
         .min(1, "Start date is required")
@@ -57,15 +59,36 @@ export const createSubActivity = async (data) => {
       ]
     );
 
+    const sub_activity_id = result.insertId;
+
     const [newActivityRows] = await db.query(
       "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
-      [result.insertId]
+      [sub_activity_id]
     );
 
-    return newActivityRows[0];
+
+    const qrData = `main,${activity_id} ,sub,${sub_activity_id}`;
+    const qrImagePath = path.join(process.cwd(), 'public', 'qrcodes', `${sub_activity_id}.png`);
+
+
+    const qrFolder = path.dirname(qrImagePath);
+    if (!fs.existsSync(qrFolder)) {
+      fs.mkdirSync(qrFolder, { recursive: true });
+    }
+
+    await QRCode.toFile(qrImagePath, qrData);
+    await db.query(
+      `UPDATE sub_activity SET qr_image_url = ? WHERE sub_activity_id = ?`,
+      [`/qrcodes/${sub_activity_id}.png`, sub_activity_id]
+    );
+
+    return {
+      ...newActivityRows[0],
+      qr_image_url: `/qrcodes/${sub_activity_id}.png`,
+    };
   } catch (error) {
-    console.error("❌ createSubActivity error:", error); // Log the error for debugging
-    throw new Error("Create subActivity failed: " + error.message); // Throw a generic error message
+    console.error("❌ createSubActivity error:", error);
+    throw new Error("Create subActivity failed: " + error.message);
   }
 };
 
@@ -163,5 +186,67 @@ export const updateSubActivity = async (data, params) => {
   } catch (error) {
     console.error("❌ updateSubActivity error:", error); // Log the error for debugging
     throw new Error("Failed to update subActivity"); // Throw a generic error message
+  }
+};
+
+export const checkin = async (data) => {
+  try {
+    const checkinSchema = z.object({
+      sub_activity_id: z.number().min(1, "Sub Activity ID is required"),
+      member_id: z.number().min(1, "User ID is required"),
+      activity_id: z.number().min(1, "Activity ID is required"),
+    });
+
+    const checkinResult = checkinSchema.safeParse(data);
+    if (!checkinResult.success) {
+      console.error(checkinResult.error.format());
+      return;
+    }
+
+    const { sub_activity_id, member_id, activity_id } = checkinResult.data;
+
+    const [checkinRows] = await db.query(
+      "SELECT * FROM checkin WHERE sub_activity_id = ? AND member_id = ? AND activity_id = ?",
+      [sub_activity_id, member_id, activity_id]
+    );
+
+    if (checkinRows.length > 0) {
+      const [updateCheckIn] = await db.query(
+        "UPDATE checkin SET is_checkin = 1 WHERE sub_activity_id = ? AND member_id = ? AND activity_id = ?",
+        [sub_activity_id, member_id, activity_id]
+      );
+
+      return {message : "Check-in updated successfully",status: 200};
+    }
+
+    if (checkinRows.length === 0) {
+      const [checkSubActivityMax] = await db.query(
+        "SELECT * FROM sub_activity WHERE sub_activity_max = 0 AND sub_activity_id = ?",
+        [sub_activity_id]
+      );
+
+      if (checkSubActivityMax.length > 0) {
+        return {message : "Sub activity is full or not found", status: 400};
+      }
+
+      const [checkSubactivityPrice] = await db.query(
+        "SELECT * FROM sub_activity WHERE sub_activity_price > 0 AND sub_activity_id = ?",
+        [sub_activity_id]
+      );
+
+      if (checkSubactivityPrice.length > 0) {
+        return {message : "Not Allowed it not free", status: 400};
+      } 
+
+      const [insertCheckIn] = await db.query(
+        "INSERT INTO checkin ( member_id, activity_id,sub_activity_id, checkin_time, is_checkin) VALUES (?, ?, ?, NOW(),?)",
+        [member_id, activity_id,sub_activity_id, 1]
+      );
+      return {messgae : "Check-in successful", status: 200};
+    }
+
+  } catch (error) {
+    console.error("❌ checkin error:", error);
+    return("Check-in failed: " + error.message);
   }
 };

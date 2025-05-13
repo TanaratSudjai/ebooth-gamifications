@@ -1,26 +1,39 @@
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
-  // ดึงค่า token จาก cookies
-  const token = req.cookies.get("next-auth.session-token")?.value;
-  console.log("Token:", token); // แสดงค่า token ใน console
+export async function middleware(req) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const path = req.nextUrl.pathname;
+  console.log(token);
 
-  // ถ้าไม่มี token และกำลังเข้าถึงหน้า admin
 
-  if (!token && req.nextUrl.pathname.startsWith("/admin")) {
-    // รีไดเร็กต์ไปที่หน้าแรกหรือหน้า login
+  if (path.startsWith("/api/auth") || path === "/login") {
+    return NextResponse.next();
+  }
+ 
+  if (path.startsWith("/admin") && (!token || token?.role !== "admin")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
-  if (!token && req.nextUrl.pathname.startsWith("/member")) {
-    // รีไดเร็กต์ไปที่หน้าแรกหรือหน้า login
+  if (path.startsWith("/personal") && (!token || token?.role !== "personal")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // ถ้ามี token หรือไม่ใช่หน้า admin ก็ให้ผ่าน
+  if (path.startsWith("/member") && (!token || token?.role !== "member")) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  // 🔒 Protect API
+  if (path.startsWith("/api") && !token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   return NextResponse.next();
 }
-
 export const config = {
-  // กำหนดให้ middleware ทำงานกับ path /admin และทุก path ย่อย
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/personal/:path*",
+    "/api/:path*", // ✅ ต้องมี เพื่อคุม API
+    "/login", // ✅ ใส่เพื่อจะสามารถยกเว้นได้ใน logic
+  ],
 };

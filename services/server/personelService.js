@@ -5,7 +5,7 @@ import { z } from "zod"; // ใช้สำหรับการตรวจส�
 export const createPersonnel = async (data) => {
   try {
     const PersonnelSchema = z.object({
-      personnel_name: z.string().min(3, "Name is too short"),
+      personnel_name: z.string().min(2, "Name is too short"),
       personnel_address: z.string().min(1, "Address is required"),
       personnel_tel: z
         .string()
@@ -71,17 +71,17 @@ export const createPersonnel = async (data) => {
 };
 
 export const getPersonnelById = async (id) => {
-  try{
+  try {
 
     const [rows] = await db.query(
       "SELECT * FROM personnel WHERE personnel_id = ?",
       [id]
     );
-  
+
     if (rows.length === 0) {
       throw new Error("Personnel not found");
     }
-  
+
     return rows[0]; // Return the first profile
   } catch (error) {
     console.error("❌ getPersonnelById error:", error);
@@ -208,3 +208,61 @@ export const getPersonnelData = async (page = 1, limit = 10) => {
   }
 };
 
+export const getMemberByActivityId = async (activity_id) => {
+  try {
+    const [activityRows] = await db.query(
+      "SELECT * FROM activity WHERE activity_id = ?",
+      [activity_id]
+    );
+
+    const [rows] = await db.query(
+      `
+      SELECT member.*,MAX(checkin.is_checkin) AS is_checkin from checkin left join member on checkin.member_id = member.member_id 
+      WHERE activity_id = ? group by member.member_id
+      `,
+      [activity_id]
+    );
+
+    return {
+      data: {
+        activity: activityRows[0],
+        memberCount: rows.length,
+        members: rows,
+      }
+
+    };
+  } catch (error) {
+    console.error("Error fetching members by activity ID:", error);
+    throw new Error("Failed to fetch members by activity ID");
+  }
+}
+
+export const getMemberBySubActivityId = async (subActivity_id) => {
+  try {
+
+    const [[subActivityRows]] = await db.query(
+      "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
+      [subActivity_id]
+    );
+
+    const [rows] = await db.query(
+      `
+      SELECT member.*,MAX(checkin.is_checkin) AS is_checkin from checkin left join member on checkin.member_id = member.member_id
+      WHERE sub_activity_id = ? group by member.member_id
+      `,
+      [subActivity_id]
+    );
+
+    return {
+      data: {
+        subActivity: subActivityRows,
+        memberCount: rows.length,
+        members: rows,
+
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching members by sub activity ID:", error);
+    throw new Error("Failed to fetch members by sub activity ID");
+  }
+}
