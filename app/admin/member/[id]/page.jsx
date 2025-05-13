@@ -60,7 +60,7 @@ function page() {
     try {
       const response = await axios.get(`/api/user/profile/${id}`);
     
-      
+
       if (response.status === 200) {
         setFormData(response.data);
       }

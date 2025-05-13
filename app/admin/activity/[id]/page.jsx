@@ -63,6 +63,8 @@ function page() {
         const response = await axios.get(`/api/activity/${activityId}`);
         if (response.status === 200) {
           setFormData(response.data);
+          console.log(response.data);
+          
         }
         // setLoading(true)
       } catch (err) {

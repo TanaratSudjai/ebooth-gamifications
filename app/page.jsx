@@ -22,6 +22,7 @@ export default function LoginPage() {
       redirect: false,
       email: loginData.member_email,
       password: loginData.member_password,
+      redirect: false,
     });
 
     if (result?.error) {
