@@ -18,7 +18,7 @@ function page() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [organize, setOrganize] = useState([]);
-
+  const [mission, setMission] = useState([]);
   const [submit, setSubmit] = useState(false);
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
@@ -33,17 +33,36 @@ function page() {
     // is_multi_day: false,
     organize_id: 0,
     activity_price: 0,
+    mission_ids: [],
   });
 
   // use sweetalert2 for error and success message
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      // [name]: type === "checkbox" ? e.target.checked : value,
-      [name]: type === "number" ? Number(value) : value,
-      // [name]: value
-    }));
+    const { name, value, type, checked } = e.target;
+
+    if (name === "mission_ids") {
+      setFormData((prev) => {
+        const currentMissions = prev.mission_ids || [];
+        if (checked) {
+          // เพิ่ม id เข้า array
+          return {
+            ...prev,
+            mission_ids: [...currentMissions, parseInt(value)],
+          };
+        } else {
+          // ลบ id ออกจาก array
+          return {
+            ...prev,
+            mission_ids: currentMissions.filter((id) => id !== parseInt(value)),
+          };
+        }
+      });
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "number" ? Number(value) : value,
+      }));
+    }
   };
 
   const fetchOrganize = async () => {
@@ -52,7 +71,7 @@ function page() {
       if (response.status === 200) {
         setOrganize(response.data.data);
       }
-      console.log(response.data.data);
+      // console.log(response.data.data);
     } catch (err) {
       console.error("Error fetching organize data:", err);
     }
@@ -63,8 +82,7 @@ function page() {
         const response = await axios.get(`/api/activity/${activityId}`);
         if (response.status === 200) {
           setFormData(response.data);
-          console.log(response.data);
-          
+          // console.log(response.data);
         }
         // setLoading(true)
       } catch (err) {
@@ -72,10 +90,20 @@ function page() {
       }
     }
   };
+  const fecthMission = async () => {
+    try {
+      const response = await axios.get(`/api/mission`);
+      setMission(response.data.data.data);
+    } catch (err) {
+      console.error("Error fetching activity data:", err);
+    }
+  };
+
   // fetch data for editing
   useEffect(() => {
     fetchOrganize();
     fetchData();
+    fecthMission();
   }, [activityId]);
 
   const handleSubmit = async (e) => {
@@ -91,6 +119,9 @@ function page() {
       activity_price: parseInt(formData.activity_price),
       activity_start: toSQLDatetimeFormat(formData.activity_start),
       activity_end: toSQLDatetimeFormat(formData.activity_end),
+      mission_ids: Array.isArray(formData.mission_ids)
+        ? formData.mission_ids.map((id) => parseInt(id))
+        : [],
     };
 
     try {
@@ -134,6 +165,7 @@ function page() {
       is_multi_day: false,
       organize_id: 0,
       activity_price: 0,
+      mission_ids: [],
     });
   };
 
@@ -244,19 +276,6 @@ function page() {
             />
           </div>
 
-          {/* <div className="flex items-center gap-2">
-            <input
-              className="p-2 w-auto border border-gray-300 rounded-lg"
-              type="checkbox"
-              name="is_multi_day"
-              value={1}
-              onChange={handleChange}
-              checked={formData.is_multi_day}
-              id="is_multi_day"
-            />
-            <label htmlFor="is_multi_day">กิจกรรมหลายวัน</label>
-          </div> */}
-
           <div>
             <label className="block mb-1">ผู้จัดกิจกรรม</label>
             {/* dropdown organizer with ul li  */}
@@ -275,6 +294,31 @@ function page() {
                   </option>
                 ))}
             </select>
+          </div>
+
+          {/* map mission */}
+          <div className="">
+            {mission.length > 0 && (
+              <div>
+                <label className="block mb-1">ภารกิจ</label>
+                <div className="flex flex-col gap-2">
+                  {mission.map((mission) => (
+                    <div key={mission.mission_id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="mission_ids"
+                        value={mission.mission_id}
+                        onChange={handleChange}
+                        checked={formData.mission_ids.includes(
+                          mission.mission_id
+                        )}
+                      />
+                      <label className="ml-2">{mission.mission_name}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
