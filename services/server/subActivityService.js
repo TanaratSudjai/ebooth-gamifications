@@ -24,6 +24,9 @@ export const createSubActivity = async (data) => {
       sub_activity_max: z.number().min(1, "Max member is required"),
       sub_activity_point: z.number().min(1, "Reward points is required"),
       sub_activity_price: z.number().min(0, "Price is required"),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
     });
 
     const subActivityResult = subActivitySchema.safeParse(data);
@@ -41,6 +44,7 @@ export const createSubActivity = async (data) => {
       sub_activity_max,
       sub_activity_point,
       sub_activity_price,
+      mission_ids,
     } = subActivityResult.data;
 
     const [result] = await db.query(
@@ -66,6 +70,13 @@ export const createSubActivity = async (data) => {
       [sub_activity_id]
     );
 
+
+    for (const mission_id of mission_ids) {
+      const [result] = await db.query(
+        `INSERT INTO activity_mission (activity_id, mission_id, sub_activity_id) VALUES (?, ?, ?)`,
+        [activity_id, mission_id, sub_activity_id]
+      );
+    }
 
     const qrData = `main,${activity_id} ,sub,${sub_activity_id}`;
     const qrImagePath = path.join(process.cwd(), 'public', 'qrcodes', `${sub_activity_id}.png`);
