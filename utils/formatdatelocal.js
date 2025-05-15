@@ -23,7 +23,7 @@ export function toSQLDatetimeFormat(dateStr) {
   const mi = String(date.getMinutes()).padStart(2, "0");
   const ss = String(date.getSeconds()).padStart(2, "0");
 
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`; // ✅ MySQL compatible format
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`; 
 }
 export function DisplayFormathSQLDatetimeFormat(dateStr) {
   if (!dateStr) return "";
@@ -38,6 +38,6 @@ export function DisplayFormathSQLDatetimeFormat(dateStr) {
   const mi = String(date.getMinutes()).padStart(2, "0");
   const ss = String(date.getSeconds()).padStart(2, "0");
 
-  return `${hh}:${mi}`; // ✅ MySQL compatible format
+  return `วันที่ ${dd} เวลา ${hh}:${mi}`; 
 }
 
