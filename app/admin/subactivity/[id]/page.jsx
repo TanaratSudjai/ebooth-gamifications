@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAlert } from "@/contexts/AlertContext";
 import axios from "axios";
-import dayjs from "dayjs";
 import Image from "next/image";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import {
@@ -12,6 +11,7 @@ import {
 } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import dayjs from "@/lib/dayjs";
 
 function page() {
   const router = useRouter();
@@ -135,6 +135,7 @@ function page() {
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? Number(value) : value,
+      sub_activity_start: utcDate.toISOString(),
     }));
   };
 
@@ -192,13 +193,13 @@ function page() {
                     </div>
                     <p className="p-1">{sub.sub_activity_description}</p>
                     <div className="flex flex-col md:flex-row gap-2 break-all">
-                      {dayjs(sub.sub_activity_start).format(
-                        "วันที่ DD เวลา HH:mm"
-                      )}
+                      {dayjs(sub.sub_activity_start)
+                        .tz("Asia/Bangkok")
+                        .format("วันที่ DD เวลา HH:mm")}
                       <p className="text-red-500"> จนถึง</p>
-                      {dayjs(sub.sub_activity_end).format(
-                        "วันที่ DD เวลา HH:mm"
-                      )}
+                      {dayjs(sub.sub_activity_end)
+                        .tz("Asia/Bangkok")
+                        .format("วันที่ DD เวลา HH:mm")}
                     </div>
                     <div className="flex gap-5">
                       <p>จำนวนที่รับ {sub.sub_activity_max}</p>
@@ -208,15 +209,15 @@ function page() {
                     <img src={sub.qr_image_url} alt="" className="w-32" />
 
                     <div className="flex w-full gap-2 justify-around">
-                    <a
-                      href={sub.qr_image_url}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-amber-300 p-1 border w-full text-black rounded-md cursor-pointer text-center"
-                    >
-                      ดาวน์โหลด QR
-                    </a>
+                      <a
+                        href={sub.qr_image_url}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-amber-300 p-1 border w-full text-black rounded-md cursor-pointer text-center"
+                      >
+                        ดาวน์โหลด QR
+                      </a>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -307,17 +308,18 @@ function page() {
                     : null
                 }
                 onChange={(date) => {
+                  // แปลงจากเวลาไทย -> UTC ก่อนส่ง
+                  const utcDate = zonedTimeToUtc(date, "Asia/Bangkok");
                   setFormData((prev) => ({
                     ...prev,
-                    sub_activity_start: date,
+                    sub_activity_start: utcDate.toISOString(), // UTC format
                   }));
                 }}
-                timeInputLabel="Time:"
-                dateFormat="MM/dd/yyyy h:mm aa"
                 showTimeInput
+                dateFormat="dd/MM/yyyy HH:mm"
+                timeIntervals={15}
+                placeholderText="กรุณาเลือกเวลา"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full"
-                required
-                placeholderText="กรูณาเลือกเวลา"
               />
             </label>
 
