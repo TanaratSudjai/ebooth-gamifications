@@ -63,10 +63,11 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/dashboard`);
-      console.log(response.data);
+      console.log(response.data.activityUpComing);
 
       // ตรวจสอบและตั้งค่าข้อมูล
       setActivityUpComing(response.data.activityUpComing || []);
+
       setTotalMembers(response.data.totalMembers || 0);
       setTotalOrganizes(response.data.totalOrganizes || 0);
       setTotalMemberRanks(response.data.totalMemberRanks || 0);
@@ -292,10 +293,10 @@ const Dashboard = () => {
                       </div>
                       <div className="ml-4">
                         <h3 className="font-medium text-gray-800">
-                          {event.title || "ไม่มีชื่อกิจกรรม"}
+                          {event.activity_name || "ไม่มีชื่อกิจกรรม"}
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">
-                          {event.location || "ไม่ระบุสถานที่"}
+                          {event.activity_description || "-"}
                         </p>
                         <div className="mt-2 text-xs text-amber-600 font-medium">
                           {event.participants || 0} ผู้เข้าร่วม
@@ -406,7 +407,10 @@ const Dashboard = () => {
                 </div>
               )}
               {newestActivities && newestActivities.length > 0 && (
-                <button onClick={() => route.push("/admin/activity")} className="text-amber-500 hover:text-amber-600 text-sm font-medium w-full text-center pt-2">
+                <button
+                  onClick={() => route.push("/admin/activity")}
+                  className="text-amber-500 hover:text-amber-600 text-sm font-medium w-full text-center pt-2"
+                >
                   ดูทั้งหมด
                 </button>
               )}
