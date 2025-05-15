@@ -7,8 +7,8 @@ import dayjs from "dayjs";
 import Image from "next/image";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import {
-  toDatetimeLocalString,
   toSQLDatetimeFormat,
+  DisplayFormathSQLDatetimeFormat,
 } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -192,13 +192,9 @@ function page() {
                     </div>
                     <p className="p-1">{sub.sub_activity_description}</p>
                     <div className="flex flex-col md:flex-row gap-2 break-all">
-                      {dayjs(sub.sub_activity_start).format(
-                        "วันที่ DD เวลา HH:mm"
-                      )}
+                      {DisplayFormathSQLDatetimeFormat(sub.sub_activity_start)}
                       <p className="text-red-500"> จนถึง</p>
-                      {dayjs(sub.sub_activity_end).format(
-                        "วันที่ DD เวลา HH:mm"
-                      )}
+                      {DisplayFormathSQLDatetimeFormat(sub.sub_activity_end)}
                     </div>
                     <div className="flex gap-5">
                       <p>จำนวนที่รับ {sub.sub_activity_max}</p>
@@ -208,15 +204,15 @@ function page() {
                     <img src={sub.qr_image_url} alt="" className="w-32" />
 
                     <div className="flex w-full gap-2 justify-around">
-                    <a
-                      href={sub.qr_image_url}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-amber-300 p-1 border w-full text-black rounded-md cursor-pointer text-center"
-                    >
-                      ดาวน์โหลด QR
-                    </a>
+                      <a
+                        href={sub.qr_image_url}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-amber-300 p-1 border w-full text-black rounded-md cursor-pointer text-center"
+                      >
+                        ดาวน์โหลด QR
+                      </a>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
