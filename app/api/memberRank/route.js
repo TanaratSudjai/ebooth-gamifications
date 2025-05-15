@@ -16,7 +16,7 @@ export const config = {
 export async function POST(request) {
   // This is the magic that converts Web Request to a Node stream
   const form = new IncomingForm({
-    uploadDir: path.join(process.cwd(), "/public/uploads/member_ranks"),
+    uploadDir: path.join(process.cwd(), "/tmp/uploads/member_ranks"),
     keepExtensions: true,
   });
 
