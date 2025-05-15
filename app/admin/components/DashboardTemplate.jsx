@@ -167,6 +167,17 @@ function DashboardTemplate({ children }) {
                   แผลควบคุมกิจกรรม
                 </button>
               </li>
+              <li>
+                <button
+                  className={`w-full text-left p-2 rounded-lg border-gray-100 border-2 hover:scale-105 transform duration-300 ease-in-out transition hover:  ${isActive(
+                    "mission"
+                  )}`}
+                  onClick={() => to("mission")}
+                >
+                  <MdDashboardCustomize />
+                  จัดการภารกิจ
+                </button>
+              </li>
             </div>
             <li>
               <button

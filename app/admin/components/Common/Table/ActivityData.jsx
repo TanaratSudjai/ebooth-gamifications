@@ -24,6 +24,7 @@ function ActivityData() {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [subactivity, setSubActivity] = useState([]);
+  const [mission, setMission] = useState([]);
 
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
@@ -40,6 +41,7 @@ function ActivityData() {
     sub_activity_max: 1,
     sub_activity_point: 1,
     sub_activity_price: 1,
+    mission_ids: [],
   });
 
   // _-----
@@ -53,12 +55,30 @@ function ActivityData() {
     sub_activity_max: Number(formData.sub_activity_max),
     sub_activity_point: Number(formData.sub_activity_point),
     sub_activity_price: Number(formData.sub_activity_price),
+    mission_ids: Array.isArray(formData.mission_ids)
+      ? formData.mission_ids.map((id) => parseInt(id))
+      : [],
   };
 
   // _-----
   const onChange = (e) => {
     e.preventDefault();
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "mission_ids") {
+      const checked = e.target.checked;
+      const missionId = parseInt(value);
+      setFormData((prev) => ({
+        ...prev,
+        mission_ids: checked
+          ? [...prev.mission_ids, missionId]
+          : prev.mission_ids.filter((id) => id !== missionId),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   // /api/subActivity POST
@@ -96,8 +116,18 @@ function ActivityData() {
     }
   }
 
+  const fecthMission = async () => {
+    try {
+      const response = await axios.get(`/api/mission`);
+      setMission(response.data.data.data);
+    } catch (err) {
+      console.error("Error fetching activity data:", err);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fecthMission();
   }, [page, limit]);
 
   const handlePageChange = (newPage) => {
@@ -255,7 +285,7 @@ function ActivityData() {
                     </button>
 
                     {!activity.sub_activity_count ||
-                      activity.sub_activity_count === 0 ? (
+                    activity.sub_activity_count === 0 ? (
                       <div className=""></div>
                     ) : (
                       <button
@@ -382,6 +412,33 @@ function ActivityData() {
                 placeholderText="กรูณาเลือกเวลา"
               />
             </label>
+
+            <div className="flex w-full max-w-full">
+              {mission.length > 0 && (
+                <div>
+                  <label className="block mb-1">ภารกิจ</label>
+                  <div className="flex flex-col gap-2">
+                    {mission.map((mission) => (
+                      <div
+                        key={mission.mission_id}
+                        className="flex items-center"
+                      >
+                        <input
+                          type="checkbox"
+                          name="mission_ids"
+                          value={mission.mission_id}
+                          onChange={onChange}
+                          checked={formData.mission_ids.includes(
+                            mission.mission_id
+                          )}
+                        />
+                        <label className="ml-2">{mission.mission_name}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <label className="w-full max-w-full">
               จำนวนคน

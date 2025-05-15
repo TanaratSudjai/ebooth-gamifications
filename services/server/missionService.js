@@ -72,19 +72,12 @@ export const getMissions = async (page = 1, limit = 10) => {
   };
 };
 
-export const getMissionsById = async (params, page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
-  const [rows] = await db.query(`SELECT * FROM mission WHERE mission_id = ? LIMIT ? OFFSET ?`, [
+export const getMissionsById = async (params) => {
+  const [rows] = await db.query(`SELECT * FROM mission WHERE mission_id = ? `, [
     params,
-    Number(limit),
-    Number(offset),
   ]);
-  const [count] = await db.query(`SELECT COUNT(*) AS count FROM mission WHERE mission_id = ?`, [params]);
   return {
-    data: rows,
-    total: count[0].count,
-    page: Number(page),
-    limit: Number(limit),
+    data : rows,
   };
 };
 
