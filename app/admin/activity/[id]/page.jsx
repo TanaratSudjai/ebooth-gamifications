@@ -39,31 +39,26 @@ function page() {
   // use sweetalert2 for error and success message
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const parsedValue = type === "number" || name === "mission_ids" ? Number(value) : value;
 
     if (name === "mission_ids") {
       setFormData((prev) => {
         const currentMissions = prev.mission_ids || [];
-        if (checked) {
-          // เพิ่ม id เข้า array
-          return {
-            ...prev,
-            mission_ids: [...currentMissions, parseInt(value)],
-          };
-        } else {
-          // ลบ id ออกจาก array
-          return {
-            ...prev,
-            mission_ids: currentMissions.filter((id) => id !== parseInt(value)),
-          };
-        }
+        return {
+          ...prev,
+          mission_ids: checked
+            ? [...currentMissions, parsedValue]
+            : currentMissions.filter((id) => id !== parsedValue),
+        };
       });
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: type === "number" ? Number(value) : value,
+        [name]: parsedValue,
       }));
     }
   };
+
 
   const fetchOrganize = async () => {
     try {
