@@ -76,20 +76,33 @@ function page() {
       console.error("Error fetching organize data:", err);
     }
   };
+
   const fetchData = async () => {
     if (activityId !== 0) {
       try {
         const response = await axios.get(`/api/activity/${activityId}`);
         if (response.status === 200) {
-          setFormData(response.data);
-          // console.log(response.data);
+          const data = response.data;
+
+          // ตรวจสอบว่า mission_ids เป็น string หรือ array แล้วแปลงเป็น number[]
+          const missionIds = typeof data.mission_ids === "string"
+            ? data.mission_ids.split(",").map((id) => Number(id))
+            : Array.isArray(data.mission_ids)
+              ? data.mission_ids.map((id) => Number(id))
+              : [];
+
+          setFormData({
+            ...data,
+            mission_ids: missionIds,
+          });
         }
-        // setLoading(true)
       } catch (err) {
         console.error("Error fetching activity data:", err);
       }
     }
   };
+
+
   const fecthMission = async () => {
     try {
       const response = await axios.get(`/api/mission`);
@@ -196,9 +209,10 @@ function page() {
           </div>
           <div>
             <label className="block mb-1">คำอธิบาย</label>
-            <input
+            <textarea
+              rows={4}
               className="p-2 border border-gray-300 rounded-lg w-full "
-              type="text"
+              type="area"
               name="activity_description"
               placeholder="คำอธิบายกิจกรรม"
               required
@@ -249,90 +263,102 @@ function page() {
               />
             </div>
           </div>
-          <div>
-            <label className="block mb-1">จำนวนผู้เข้าร่วมสูงสุด</label>
-            <input
-              className="p-2 border border-gray-300 rounded-lg w-full"
-              type="number"
-              maxLength={5}
-              name="activity_max"
-              placeholder="จำนวนผู้เข้าร่วมสูงสุด"
-              required
-              onChange={handleChange}
-              value={formData.activity_max}
-            />
-          </div>
-          <div>
-            <label className="block mb-1">คะแนนรางวัล</label>
-            <input
-              className="p-2 border border-gray-300 rounded-lg w-full"
-              type="number"
-              name="reward_points"
-              placeholder="คะแนนรางวัล"
-              required
-              onChange={handleChange}
-              value={formData.reward_points}
-              min="0"
-            />
+
+
+          <div className="flex w-full gap-2 flex-col md:flex-row">
+            <div className="flex w-full  gap-2 justify-center items-center">
+              <div className="basis-1/2">
+                <label className="block mb-1">จำนวนผู้เข้าร่วมสูงสุด</label>
+                <input
+                  className="p-2 border border-gray-300 rounded-lg w-full"
+                  type="number"
+                  name="activity_max"
+                  placeholder="จำนวนผู้เข้าร่วมสูงสุด"
+                  required
+                  onChange={handleChange}
+                  value={formData.activity_max}
+                />
+              </div>
+              <div className="basis-1/2">
+                <label className="block mb-1">คะแนนรางวัล</label>
+                <input
+                  className="p-2 border border-gray-300 rounded-lg w-full"
+                  type="number"
+                  name="reward_points"
+                  placeholder="คะแนนรางวัล"
+                  required
+                  onChange={handleChange}
+                  value={formData.reward_points}
+                  min="0"
+                />
+              </div>
+            </div>
+            <div className="flex  w-full  gap-2 justify-center items-center">
+              <div className="basis-1/2">
+                <label className="block mb-1">ราคากิจกรรม</label>
+                <input
+                  className="p-2 border border-gray-300 rounded-lg w-full"
+                  type="number"
+                  name="activity_price"
+                  placeholder="ราคากิจกรรม"
+                  required
+                  onChange={handleChange}
+                  value={formData.activity_price}
+                  min="0"
+                />
+              </div>
+              <div className="basis-1/2">
+                <label className="block mb-1">ผู้จัดกิจกรรม</label>
+                <select
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  name="organize_id"
+                  required
+                  onChange={handleChange}
+                  value={formData.organize_id}
+                >
+                  <option value="">เลือกผู้จัดกิจกรรม</option>
+                  {Array.isArray(organize) &&
+                    organize.map((org) => (
+                      <option key={org.organize_id} value={org.organize_id}>
+                        {org.organize_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
           </div>
 
-          <div>
-            <label className="block mb-1">ผู้จัดกิจกรรม</label>
-            {/* dropdown organizer with ul li  */}
-            <select
-              className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-orange-500"
-              name="organize_id"
-              required
-              onChange={handleChange}
-              value={formData.organize_id}
-            >
-              <option value="">เลือกผู้จัดกิจกรรม</option>
-              {Array.isArray(organize) &&
-                organize.map((org) => (
-                  <option key={org.organize_id} value={org.organize_id}>
-                    {org.organize_name}
-                  </option>
-                ))}
-            </select>
-          </div>
+
+
 
           {/* map mission */}
-          <div className="">
-            {mission.length > 0 && (
-              <div>
-                <label className="block mb-1">ภารกิจ</label>
-                <div className="flex flex-col gap-2">
-                  {mission.map((mission) => (
-                    <div key={mission.mission_id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name="mission_ids"
-                        value={mission.mission_id}
-                        onChange={handleChange}
-                        checked={formData.mission_ids.includes(
-                          mission.mission_id
-                        )}
-                      />
-                      <label className="ml-2">{mission.mission_name}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <label>เลือกเกมส์ในกิจกรรม</label>
+          <div className="flex gap-2 flex-wrap">
+            {mission.map((missionItem) => {
+              const isChecked = formData.mission_ids.includes(Number(missionItem.mission_id));
 
-          <div>
-            <label className="block mb-1">ราคากิจกรรม</label>
-            <input
-              className="p-2 border border-gray-300 rounded-lg w-full"
-              type="number"
-              name="activity_price"
-              placeholder="ราคากิจกรรม"
-              required
-              onChange={handleChange}
-              value={formData.activity_price}
-              min="0"
-            />
+              return (
+                <label
+                  key={missionItem.mission_id}
+                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isChecked
+                    ? "bg-yellow-100 border-yellow-500 shadow-md"
+                    : "bg-white border-gray-200"
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    name="mission_ids"
+                    value={missionItem.mission_id}
+                    onChange={handleChange}
+                    checked={isChecked}
+                    className="hidden"
+                  />
+                  <span className="ml-2">{missionItem.mission_name}</span>
+                </label>
+              );
+            })}
+
           </div>
 
           <div className="flex justify-end">
