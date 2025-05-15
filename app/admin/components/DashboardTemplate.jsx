@@ -12,6 +12,7 @@ import { GiWantedReward } from "react-icons/gi";
 import { FaRankingStar } from "react-icons/fa6";
 import { MdDashboardCustomize } from "react-icons/md";
 import { ImMenu } from "react-icons/im";
+import { IoGameController } from "react-icons/io5";
 function DashboardTemplate({ children }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -92,6 +93,17 @@ function DashboardTemplate({ children }) {
               <li>
                 <button
                   className={`w-full text-left p-2 rounded-lg border-gray-100 border-2 hover:scale-105 transform duration-300 ease-in-out transition hover:  ${isActive(
+                    "dashboard"
+                  )}`}
+                  onClick={() => to("dashboard")}
+                >
+                  <MdDashboardCustomize />
+                  แผลควบคุมกิจกรรม
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`w-full text-left p-2 rounded-lg border-gray-100 border-2 hover:scale-105 transform duration-300 ease-in-out transition hover:  ${isActive(
                     "activity"
                   )}`}
                   onClick={() => to("activity")}
@@ -156,17 +168,7 @@ function DashboardTemplate({ children }) {
                   จัดการระดับสมาชิก
                 </button>
               </li>
-              <li>
-                <button
-                  className={`w-full text-left p-2 rounded-lg border-gray-100 border-2 hover:scale-105 transform duration-300 ease-in-out transition hover:  ${isActive(
-                    "dashboard"
-                  )}`}
-                  onClick={() => to("dashboard")}
-                >
-                  <MdDashboardCustomize />
-                  แผลควบคุมกิจกรรม
-                </button>
-              </li>
+              
               <li>
                 <button
                   className={`w-full text-left p-2 rounded-lg border-gray-100 border-2 hover:scale-105 transform duration-300 ease-in-out transition hover:  ${isActive(
@@ -174,7 +176,7 @@ function DashboardTemplate({ children }) {
                   )}`}
                   onClick={() => to("mission")}
                 >
-                  <MdDashboardCustomize />
+                  <IoGameController />
                   จัดการภารกิจ
                 </button>
               </li>

@@ -62,11 +62,11 @@ function ActivityData() {
 
   // _-----
   const onChange = (e) => {
-    e.preventDefault();
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+
     if (name === "mission_ids") {
-      const checked = e.target.checked;
       const missionId = parseInt(value);
+
       setFormData((prev) => ({
         ...prev,
         mission_ids: checked
@@ -76,10 +76,11 @@ function ActivityData() {
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: type === "checkbox" ? checked : value,
       }));
     }
   };
+
 
   // /api/subActivity POST
   const handleSubmit = async (e) => {
@@ -285,7 +286,7 @@ function ActivityData() {
                     </button>
 
                     {!activity.sub_activity_count ||
-                    activity.sub_activity_count === 0 ? (
+                      activity.sub_activity_count === 0 ? (
                       <div className=""></div>
                     ) : (
                       <button
@@ -330,6 +331,8 @@ function ActivityData() {
           <GrNext />
         </button>
       </div>
+
+
       {/* dialog form */}
       <dialog id="my_modal_1" className="modal">
         <div className="modal-box bg-white ">
@@ -367,126 +370,131 @@ function ActivityData() {
               />
             </label>
 
-            <label className="w-full max-w-full flex flex-col">
-              เวลาเริ่ม
-              <DatePicker
-                selected={
-                  formData.sub_activity_start
-                    ? new Date(formData.sub_activity_start)
-                    : null
-                }
-                onChange={(date) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    sub_activity_start: date,
-                  }));
-                }}
-                timeInputLabel="Time:"
-                dateFormat="MM/dd/yyyy h:mm aa"
-                showTimeInput
-                className="text-black p-2 border border-gray-300 rounded-lg w-full"
-                required
-                placeholderText="กรูณาเลือกเวลา"
-              />
-            </label>
-
-            <label className="w-full max-w-full flex flex-col">
-              เวลาสิ้นสุด
-              <DatePicker
-                selected={
-                  formData.sub_activity_end
-                    ? new Date(formData.sub_activity_end)
-                    : null
-                }
-                onChange={(date) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    sub_activity_end: date,
-                  }));
-                }}
-                timeInputLabel="Time:"
-                dateFormat="MM/dd/yyyy h:mm aa"
-                showTimeInput
-                className="text-black p-2 border border-gray-300 rounded-lg w-full"
-                required
-                placeholderText="กรูณาเลือกเวลา"
-              />
-            </label>
-
-            <div className="flex w-full max-w-full">
-              {mission.length > 0 && (
-                <div>
-                  <label className="block mb-1">ภารกิจ</label>
-                  <div className="flex flex-col gap-2">
-                    {mission.map((mission) => (
-                      <div
-                        key={mission.mission_id}
-                        className="flex items-center"
-                      >
-                        <input
-                          type="checkbox"
-                          name="mission_ids"
-                          value={mission.mission_id}
-                          onChange={onChange}
-                          checked={formData.mission_ids.includes(
-                            mission.mission_id
-                          )}
-                        />
-                        <label className="ml-2">{mission.mission_name}</label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="flex justify-between ">
+              <label className=" basis-1/2 max-w-full">
+                เวลาเริ่ม
+                <DatePicker
+                  selected={
+                    formData.sub_activity_start
+                      ? new Date(formData.sub_activity_start)
+                      : null
+                  }
+                  onChange={(date) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      sub_activity_start: date,
+                    }));
+                  }}
+                  timeInputLabel="Time:"
+                  dateFormat="MM/dd/yyyy h:mm aa"
+                  showTimeInput
+                  className="text-black p-2 border border-gray-300 rounded-lg w-full"
+                  required
+                  placeholderText="กรูณาเลือกเวลา"
+                />
+              </label>
+              <label className=" basis-1/2 max-w-full">
+                เวลาสิ้นสุด
+                <DatePicker
+                  selected={
+                    formData.sub_activity_end
+                      ? new Date(formData.sub_activity_end)
+                      : null
+                  }
+                  onChange={(date) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      sub_activity_end: date,
+                    }));
+                  }}
+                  timeInputLabel="Time:"
+                  dateFormat="MM/dd/yyyy h:mm aa"
+                  showTimeInput
+                  className="text-black p-2 border border-gray-300 rounded-lg w-full"
+                  required
+                  placeholderText="กรูณาเลือกเวลา"
+                />
+              </label>
             </div>
 
-            <label className="w-full max-w-full">
-              จำนวนคน
-              <input
-                required
-                type="text"
-                placeholder="จำนวนคน"
-                className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
-                onChange={onChange}
-                value={formData.sub_activity_max}
-                name="sub_activity_max"
-              />
-            </label>
+            <div className="flex flex-col gap-2 w-full max-w-full">
+              <label className="text-left">เลือกเกมส์ในกิจกรรม</label>
+              <div className="flex gap-2 flex-wrap">
+                {mission.map((missionItem) => {
+                  const isChecked = formData.mission_ids.includes(missionItem.mission_id);
+                  return (
+                    <label
+                      key={missionItem.mission_id}
+                      className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isChecked
+                        ? "bg-yellow-100 border-yellow-500 shadow-md"
+                        : "bg-white border-gray-200"
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        name="mission_ids"
+                        value={missionItem.mission_id}
+                        onChange={onChange}
+                        checked={isChecked}
+                        className="hidden"
+                      />
+                      <span className="ml-2">{missionItem.mission_name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
 
-            <label className="w-full max-w-full">
-              คะแนนรางวัล
-              <input
-                required
-                type="text"
-                placeholder="คะแนนรางวัล"
-                className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
-                onChange={onChange}
-                value={formData.sub_activity_point}
-                name="sub_activity_point"
-              />
-            </label>
 
-            <label className="w-full max-w-full">
-              ราคา
-              <input
-                required
-                type="number"
-                placeholder="ราคา"
-                className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
-                onChange={onChange}
-                value={formData.sub_activity_price}
-                name="sub_activity_price"
-              />
-            </label>
+            <div className="flex gap-2 w-full max-w-full">
+              <label className="w-full max-w-full">
+                จำนวนคน
+                <input
+                  required
+                  type="text"
+                  placeholder="จำนวนคน"
+                  className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
+                  onChange={onChange}
+                  value={formData.sub_activity_max}
+                  name="sub_activity_max"
+                />
+              </label>
 
-            <button className="btn w-full mt-2" type="submit">
+              <label className="w-full max-w-full">
+                คะแนนรางวัล
+                <input
+                  required
+                  type="text"
+                  placeholder="คะแนนรางวัล"
+                  className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
+                  onChange={onChange}
+                  value={formData.sub_activity_point}
+                  name="sub_activity_point"
+                />
+              </label>
+
+              <label className="w-full max-w-full">
+                ราคา
+                <input
+                  required
+                  type="number"
+                  placeholder="ราคา"
+                  className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
+                  onChange={onChange}
+                  value={formData.sub_activity_price}
+                  name="sub_activity_price"
+                />
+              </label>
+            </div>
+
+            <button className="btn bg-black text-white w-full mt-2" type="submit">
               เพิ่ม
             </button>
           </form>
 
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn">ยกเลิก</button>
+              <button className="btn bg-red-500 text-white border-none">ยกเลิก</button>
             </form>
           </div>
         </div>
