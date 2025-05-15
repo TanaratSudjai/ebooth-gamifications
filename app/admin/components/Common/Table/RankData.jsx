@@ -87,12 +87,17 @@ function RankData() {
                 {/* โลโก้ */}
                 <td className="p-2">
                   <Image
-                    src={rank.member_rank_logo}
-                    width={50}
-                    height={50}
-                    alt="logo"
-                    className="rounded-full mx-auto"
-                  />
+                      src={
+                        rank.member_rank_logo.startsWith('/tmp')
+                          ? `/api/tmp-image?filename=${rank.member_rank_logo.split('/').pop()}`
+                          : rank.member_rank_logo
+                      }
+                      width={50}
+                      height={50}
+                      alt="logo"
+                      className="rounded-full mx-auto"
+                      unoptimized
+                    />
                 </td>
 
                 {/* ปุ่มแก้ไข-ลบ */}

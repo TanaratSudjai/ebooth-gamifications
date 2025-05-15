@@ -15,7 +15,7 @@ export const createMemberRank = async (data) => {
         .string()
         .refine(
           (val) =>
-            val.startsWith("/uploads/") &&
+            val.startsWith("/tmp/") &&
             (val.endsWith(".png") ||
               val.endsWith(".jpg") ||
               val.endsWith(".jpeg")),
@@ -26,6 +26,7 @@ export const createMemberRank = async (data) => {
     });
 
     const memberRankResult = memberRankSchema.safeParse(data);
+  
 
     if (!memberRankResult.success) {
       throw new Error(

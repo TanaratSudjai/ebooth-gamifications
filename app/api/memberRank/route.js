@@ -53,7 +53,7 @@ export async function POST(request) {
         }
 
         const file = files.member_rank_logo?.[0];
-        const imageUrl = `/uploads/member_ranks/${path.basename(file.filepath)}`;
+        const imageUrl = `/tmp/uploads/member_ranks/${path.basename(file.filepath)}`;
 
         const newMemberRank = await createMemberRank({
           member_rank_name: fields.member_rank_name?.[0],
