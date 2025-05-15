@@ -22,6 +22,9 @@ export const createActivity = async (data) => {
       reward_points: z.number().min(1, "Reward points is required"),
       organize_id: z.number().min(1, "Organize ID is required"),
       activity_price: z.number().min(0, "Price is required"),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
     });
 
     const activityResult = activitySchema.safeParse(data);
@@ -41,7 +44,9 @@ export const createActivity = async (data) => {
       reward_points,
       organize_id,
       activity_price,
+      mission_ids,
     } = activityResult.data;
+
     let is_multi_day;
     const startDate = new Date(activity_start);
     const endDate = new Date(activity_end);
@@ -55,6 +60,7 @@ export const createActivity = async (data) => {
     } else {
       is_multi_day = 0;
     }
+
     const [result] = await db.query(
       `INSERT INTO activity (
           activity_name, activity_description, activity_start, activity_end, activity_max, reward_points, is_multi_day, organize_id, activity_price
@@ -72,17 +78,29 @@ export const createActivity = async (data) => {
       ]
     );
 
+    const activityId = result.insertId;
+
+    for (const mission_id of mission_ids) {
+      const [result] = await db.query(
+        `INSERT INTO activity_mission (activity_id, mission_id) VALUES (?, ?)`,
+        [activityId, mission_id]
+      );
+    }
+      
     const [newActivityRows] = await db.query(
       "SELECT * FROM activity WHERE activity_id = ?",
-      [result.insertId]
+      [activityId]
     );
 
-    return newActivityRows[0];
-  } catch (error) {
+    return {
+      ...newActivityRows[0],
+    };
+    }
+  catch (error) {
     console.error("Error creating activity:", error); // Log the error for debugging
     throw new Error("Failed to create activity"); // Throw a generic error message
   }
-};
+}
 
 export const getActivityById = async (id) => {
   try {

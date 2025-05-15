@@ -4,12 +4,9 @@ import { NextResponse } from "next/server";
 export async function GET(req, { params }) {
   try {
     const id = Number(params.id);
-    const { searchParams } = new URL(req.url);
-    const page = searchParams.get("page") || 1;
-    const limit = searchParams.get("limit") || 10;
 
-    const result = await getMissionTypesById(id, page, limit);
-    return NextResponse.json({ status: "success", data: result });
+    const result = await getMissionTypesById(id);
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
       {

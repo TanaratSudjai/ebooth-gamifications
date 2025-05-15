@@ -6,11 +6,10 @@ export async function middleware(req) {
   const path = req.nextUrl.pathname;
   console.log(token);
 
-
   if (path.startsWith("/api/auth") || path === "/login") {
     return NextResponse.next();
   }
- 
+
   if (path.startsWith("/admin") && (!token || token?.role !== "admin")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
@@ -33,7 +32,7 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/personal/:path*",
-    "/api/:path*", // ✅ ต้องมี เพื่อคุม API
-    "/login", // ✅ ใส่เพื่อจะสามารถยกเว้นได้ใน logic
+    "/api/:path*", 
+    "/login", 
   ],
 };
