@@ -31,12 +31,16 @@ export function DisplayFormathSQLDatetimeFormat(dateStr) {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return "";
 
-  // เพิ่ม offset 7 ชั่วโมง (timezone GMT+7)
-  const thaiDate = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  const options = {
+    timeZone: "Asia/Bangkok",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  };
 
-  const dd = String(thaiDate.getDate()).padStart(2, "0");
-  const hh = String(thaiDate.getHours()).padStart(2, "0");
-  const mi = String(thaiDate.getMinutes()).padStart(2, "0");
-
-  return `วันที่ ${dd} เวลา ${hh}:${mi}`;
+  const formatted = new Intl.DateTimeFormat("th-TH", options).format(date);
+  return `วันที่ ${formatted.replace(",", " เวลา")}`;
 }
