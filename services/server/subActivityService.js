@@ -79,7 +79,7 @@ export const createSubActivity = async (data) => {
     }
 
     const qrData = `main,${activity_id} ,sub,${sub_activity_id}`;
-    const qrImagePath = path.join(process.cwd(), 'public', 'qrcodes', `${sub_activity_id}.png`);
+    const qrImagePath = path.join(process.cwd(), 'var/task/public', 'qrcodes', `${sub_activity_id}.png`);
 
 
     const qrFolder = path.dirname(qrImagePath);
@@ -97,6 +97,7 @@ export const createSubActivity = async (data) => {
       ...newActivityRows[0],
       qr_image_url: `/qrcodes/${sub_activity_id}.png`,
     };
+
   } catch (error) {
     console.error("❌ createSubActivity error:", error);
     throw new Error("Create subActivity failed: " + error.message);
