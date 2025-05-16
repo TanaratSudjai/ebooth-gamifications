@@ -192,9 +192,9 @@ function page() {
                     </div>
                     <p className="p-1">{sub.sub_activity_description}</p>
                     <div className="flex flex-col md:flex-row gap-2 break-all">
-                      {DisplayFormathSQLDatetimeFormat(sub.sub_activity_start)}
+                      {sub.sub_activity_start}
                       <p className="text-red-500"> จนถึง</p>
-                      {DisplayFormathSQLDatetimeFormat(sub.sub_activity_end)}
+                      {sub.sub_activity_end}
                     </div>
                     <div className="flex gap-5">
                       <p>จำนวนที่รับ {sub.sub_activity_max}</p>
