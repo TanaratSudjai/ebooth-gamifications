@@ -1,6 +1,6 @@
-import fs from "fs";
-import mime from "mime-types"; // install if missing with `npm i mime-types`
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import fs from "fs/promises";
+import mime from "mime-types";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
   region: "auto",
@@ -12,13 +12,14 @@ const s3 = new S3Client({
 });
 
 export async function uploadToR2(filePath, key) {
-  const fileStream = fs.createReadStream(filePath);
+  const fileBuffer = await fs.readFile(filePath);
 
   const command = new PutObjectCommand({
     Bucket: process.env.R2_BUCKET,
     Key: key,
-    Body: fileStream,
+    Body: fileBuffer,
     ContentType: mime.lookup(filePath) || "application/octet-stream",
+    ContentLength: fileBuffer.length,
   });
 
   await s3.send(command);
