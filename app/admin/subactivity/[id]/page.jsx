@@ -8,7 +8,7 @@ import Image from "next/image";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import {
   toSQLDatetimeFormat,
-  DisplayFormathSQLDatetimeFormat,
+  formatDisplayDateTime,
 } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
