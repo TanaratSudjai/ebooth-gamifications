@@ -17,8 +17,8 @@ function Organize() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
+  const [unitOganize, setUnitOrganize] = useState(0);
   const router = useRouter();
-
   const { showSuccess, showError } = useAlert();
   async function fetchData() {
     setLoading(true);
@@ -26,8 +26,10 @@ function Organize() {
       const response = await axios.get(
         `/api/organize?page=${page}&limit=${limit}`
       );
+      setUnitOrganize(response.data.data.length);
+      response.data.data.length;
       setData(response.data.data);
-      setTotalPages(response.data.totalPages);
+      setTotalPages(response.data.pagination.totalPages);
     } catch (error) {
       setError(error);
       setLoading(false);
@@ -68,10 +70,10 @@ function Organize() {
   };
 
   return (
-    <div className="overflow-x-auto md:overflow-hidden   border mt-10 border-base-content/5 ">
-      <table className="table border border-base-content/5 px-3">
+    <div className="overflow-x-auto md:overflow-hidden border mt-10 border-base-content/5 ">
+      <table className="table border border-base-content/5 px-3 text-left">
         <thead>
-          <tr className="text-center bg-gray-200 text-gray-800">
+          <tr className=" text-left bg-gray-200 text-gray-800">
             <th className="px-2 py-2 whitespace-nowrap">ลำดับ</th>
             <th className="px-2 py-2 whitespace-nowrap">ชื่อหน่วยงาน</th>
             <th className="px-2 py-2 whitespace-nowrap">ที่อยู่</th>
@@ -87,7 +89,7 @@ function Organize() {
               <tr
                 key={organize.organize_id}
                 onClick={() => handleDetail(organize.organize_id)}
-                className="text-center hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
+                className=" text-left hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
               >
                 <td className="table-cell-style">
                   {index + 1 + (page - 1) * limit}
@@ -133,7 +135,7 @@ function Organize() {
           )}
         </tbody>
       </table>
-      
+
       <div className="pagination container mx-auto px-10 flex justify-center gap-5 items-center mt-4">
         <button
           className="action-button text-center cursor-pointer"
@@ -142,7 +144,10 @@ function Organize() {
         >
           <MdArrowBackIos />
         </button>
-        <span className="text-black font-bold"> หน้า {page}</span>
+        <span className="text-black font-bold">
+          {" "}
+          หน้า {page} / {totalPages}
+        </span>
         <button
           className="action-button text-center cursor-pointer"
           onClick={() => handlePageChange(page + 1)}

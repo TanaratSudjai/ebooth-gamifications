@@ -4,15 +4,13 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import { useAlert } from "@/contexts/AlertContext";
-import {
-  toDatetimeLocalString,
-  toSQLDatetimeFormat,
-} from "@/utils/formatdatelocal";
+import { toSQLDatetimeFormat } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { setHours, setMinutes } from "date-fns";
+
 function page() {
   const params = useParams();
+  const router = useRouter();
   const activityId = Number(params?.id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,7 +19,7 @@ function page() {
   const [mission, setMission] = useState([]);
   const [submit, setSubmit] = useState(false);
   const { showSuccess, showError } = useAlert();
-  const router = useRouter();
+  const [ognId, setognId] = useState(null);
 
   const [formData, setFormData] = useState({
     activity_name: "",
@@ -111,6 +109,16 @@ function page() {
     fetchOrganize();
     fetchData();
     fecthMission();
+    const id_ogn = sessionStorage.getItem("activityId");
+    setognId(id_ogn);
+    if (id_ogn) {
+      setFormData((prev) => ({
+        ...prev,
+        organize_id: id_ogn,
+      }));
+      sessionStorage.removeItem("activityId");
+    }
+    // console.log(id_ogn);
   }, [activityId]);
 
   const handleSubmit = async (e) => {

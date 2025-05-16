@@ -19,7 +19,7 @@ function RankData() {
   const [totalPages, setTotalPages] = useState(0);
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
- 
+
   const fetchData = async () => {
     try {
       const response = await axios.get(
@@ -27,6 +27,7 @@ function RankData() {
       );
       console.log(response.data.data);
       setRank(response.data.data);
+      setTotalPages(response.data.pagination.totalPages);
       setLoading(true);
     } catch (error) {
       console.error(error);
@@ -61,11 +62,12 @@ function RankData() {
     <div className="overflow-x-auto md:overflow-hidden  border mt-10  border-base-content/5">
       <table className="table-auto w-full border border-base-content/5 px-3">
         <thead>
-          <tr className="text-center bg-gray-200 text-gray-800 text-xs md:text-sm">
+          <tr className="text-left bg-gray-200 text-gray-800 text-xs md:text-sm">
             <th className="px-2 py-2 whitespace-nowrap">ลำดับ</th>
             <th className="px-2 py-2 whitespace-nowrap">ชื่อของยศ</th>
             <th className="px-2 py-2 whitespace-nowrap">คะแนนพื้นฐาน</th>
             <th className="px-2 py-2 whitespace-nowrap">สัญลักษณ์</th>
+            <th className="px-2 py-2 whitespace-nowrap">จำนวนคน</th>
             <th className="px-2 py-2 whitespace-nowrap">จัดการ</th>
           </tr>
         </thead>
@@ -75,7 +77,7 @@ function RankData() {
             rank.map((rank, index) => (
               <tr
                 key={rank.member_rank_id}
-                className="text-center hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
+                className="text-left hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
               >
                 <td className="table-cell-style">
                   {index + 1 + (page - 1) * limit}
@@ -85,22 +87,22 @@ function RankData() {
                 <td className="table-cell-style">{rank.member_rank_base}</td>
 
                 {/* โลโก้ */}
-                <td className="p-2">
-                  <Image
-                      src={
-                        rank.member_rank_logo
-                      }
+                <td className="flex justify-start items-center ">
+                  <div className="p-1 ">
+                    <Image
+                      src={rank.member_rank_logo}
                       width={50}
                       height={50}
                       alt="logo"
                       className="rounded-full mx-auto"
                       unoptimized
                     />
+                  </div>
                 </td>
-
+                <td className="table-cell-style">{rank.member_count} คน</td>
                 {/* ปุ่มแก้ไข-ลบ */}
                 <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex justify-center items-center gap-2">
+                  <div className="flex justify-start items-center gap-2">
                     <button
                       className="action-button"
                       onClick={() => handleEdit(rank.member_rank_id)}
@@ -136,7 +138,10 @@ function RankData() {
         >
           <MdArrowBackIos />
         </button>
-        <span className="text-black font-bold"> หน้า {page}</span>
+        <span className="text-black font-bold">
+          {" "}
+          หน้า {page} / {totalPages}
+        </span>
         <button
           className="action-button text-center cursor-pointer"
           onClick={() => handlePageChange(page + 1)}

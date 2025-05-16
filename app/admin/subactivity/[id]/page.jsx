@@ -25,6 +25,7 @@ function page() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedIdSub, setSelectedIdSub] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [organizeName, setOrganizeName] = useState("");
   let date_start = "";
   let date_end = "";
   const [formData, setFormData] = useState({
@@ -54,15 +55,12 @@ function page() {
       const res_sub = await axios.get(
         `/api/subActivity/getSubByActivity/${id}`
       );
-      console.log("res_sub : ", res_sub.data);
-      
-      if (res_sub.data.length > 0) {
-        setSubActivity(res_sub.data);
-        setLoading(false);
-      } else {
-        setSubActivity([]);
-        setLoading(false);
-      }
+      console.log("res_sub : ", res_sub.data.data.length);
+      console.log("res_sub_data : ", res_sub.data.data);
+
+      setSubActivity(res_sub.data.data);
+      setLoading(false);
+
       // console.log(res_sub.data);
     } catch (err) {
       showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการดึงข้อมูล");
@@ -73,7 +71,16 @@ function page() {
     try {
       const res_main = await axios.get(`/api/activity/${id}`);
       setActivity(res_main.data);
+      console.log("res_main : ", res_main.data);
+
       // console.log("main data : ", res_main.data);
+      // console.log("main data : ", res_main.data.organize_id);
+      const res_organize = await axios.get(
+        `/api/organize/${res_main.data.organize_id}`
+      );
+      // console.log("organize data : ", res_organize.data.organize_name);
+      setOrganizeName(res_organize.data.organize_name);
+      fetchData();
       // console.log("id : ", id);
     } catch (err) {
       console.log(err);
@@ -121,6 +128,12 @@ function page() {
     }
   };
 
+  const isBackAndopenModal = (id) => {
+    sessionStorage.setItem("openModal", "true");
+    sessionStorage.setItem("selectedId", id);
+    router.back();
+  };
+
   // useEffect
   useEffect(() => {
     if (id) {
@@ -163,12 +176,20 @@ function page() {
                 {activity.activity_name}
               </p>
               <p className="mb-2">
+                <span className="font-semibold">หน่วยงานที่ดูเเล:</span>{" "}
+                {organizeName}
+              </p>
+              <p className="mb-2">
                 <span className="font-semibold">รายละเอียด:</span>{" "}
                 {activity.activity_description}
               </p>
               <p className="mb-2">
                 <span className="font-semibold">ค่าใช้จ่าย:</span>{" "}
                 {activity.activity_price}
+              </p>
+              <p className="mb-2">
+                <span className="font-semibold">จํานวนผู้เข้าร่วมกีจกรรม:</span>{" "}
+                {activity.total_participants || 0} คน
               </p>
               <p>
                 <span className="font-semibold">กำหนดการกิจกรรม:</span>{" "}
@@ -187,6 +208,7 @@ function page() {
           )}
         </div>
         <div className="grid w-full justify-center items-center grid-cols-1 gap-3">
+          {/* <pre>{JSON.stringify(subActivity, null, 2)}</pre> */}
           {!loading ? (
             Array.isArray(subActivity) && subActivity.length > 0 ? (
               subActivity.map((sub, index) => (
@@ -257,7 +279,7 @@ function page() {
                   {"สามารถเพิ่มภารกิจย่อยตามกิจกรรมหลักได้ใน เพจก่อนหน้านี้"}
                 </div>
                 <button
-                  onClick={() => router.back()}
+                  onClick={() => isBackAndopenModal(activity.activity_id)}
                   className="border-2 border-gray-200 bg-amber-300 p-2 rounded-lg text-black cursor-pointer hover:scale-105 duration-300 transform transition"
                 >
                   เพิ่มภารกิจย่อย
