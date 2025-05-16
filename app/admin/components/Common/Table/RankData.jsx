@@ -19,7 +19,7 @@ function RankData() {
   const [totalPages, setTotalPages] = useState(0);
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
-
+ 
   const fetchData = async () => {
     try {
       const response = await axios.get(
@@ -88,9 +88,7 @@ function RankData() {
                 <td className="p-2">
                   <Image
                       src={
-                        rank.member_rank_logo.startsWith('/tmp')
-                          ? `/api/tmp-image?filename=${rank.member_rank_logo.split('/').pop()}`
-                          : rank.member_rank_logo
+                        rank.member_rank_logo
                       }
                       width={50}
                       height={50}

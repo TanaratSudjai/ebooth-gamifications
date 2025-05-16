@@ -1,34 +1,48 @@
-import { createMemberRank } from "@/services/server/memberRankService";
 import { getPaginatedData } from "@/services/server/paginate";
-import { NextResponse } from "next/server";
-import { IncomingForm } from "formidable";
 import fs from "fs";
-import path from "path";
 import ReadableStreamToNode from "@/utils/readable";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { unstable_parseMultipartFormData, File } from "next/server";
+import { IncomingForm } from "formidable";
+import path from "path";
+import formidable from "formidable";
+import { NextResponse } from "next/server";
+import { uploadToR2 } from "@/utils/r2Upload";
+import { createMemberRank } from "@/services/server/memberRankService";
 
-// Disable default Next.js body parsing
+// app/api/upload-rank/route.js
+
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
+
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // disable Next.js built-in body parsing
   },
 };
 
 export async function POST(request) {
-  // This is the magic that converts Web Request to a Node stream
   const form = new IncomingForm({
     uploadDir: path.join(process.cwd(), "/tmp/uploads/member_ranks"),
     keepExtensions: true,
   });
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     try {
+      // Read request body as chunks
       const reader = request.body?.getReader();
-
       if (!reader) {
         return resolve(
           NextResponse.json({ status: "error", message: "No body reader" }, { status: 400 })
         );
       }
+      console.log("Reading body chunks...");
 
       const chunks = [];
       let done = false;
@@ -41,7 +55,7 @@ export async function POST(request) {
 
       const buffer = Buffer.concat(chunks);
 
-      // Create a mock Node.js request stream
+      // Convert buffer into a mock Node.js readable stream for formidable
       const mockReq = new ReadableStreamToNode(buffer, request.headers);
 
       form.parse(mockReq, async (err, fields, files) => {
@@ -51,31 +65,67 @@ export async function POST(request) {
             NextResponse.json({ status: "error", message: err.message }, { status: 500 })
           );
         }
+        console.log("Form parsed fields:", fields);
+        console.log("Form parsed files:", files);
 
         const file = files.member_rank_logo?.[0];
-        const imageUrl = `/tmp/uploads/member_ranks/${path.basename(file.filepath)}`;
+        let imageUrl = null;
 
-        const newMemberRank = await createMemberRank({
-          member_rank_name: fields.member_rank_name?.[0],
-          member_rank_base: parseInt(fields.member_rank_base?.[0]),
-          member_rank_logo: imageUrl,
-        });
+        if (file) {
+          try {
+            // Generate a unique filename for R2 key
+            const uniqueFileName = `${Date.now()}-${path.basename(file.originalFilename || file.filepath)}`;
+            const r2Key = `member_ranks/${uniqueFileName}`;
 
-        return resolve(
-          NextResponse.json(
-            {
-              status: "success",
-              message: "Member rank created successfully",
-              data: newMemberRank,
-            },
-            { status: 201 }
-          )
-        );
+            // Upload file to Cloudflare R2 and get public URL
+            imageUrl = await uploadToR2(file.filepath, r2Key);
+
+            // Optionally delete the local temp file after upload
+            fs.unlink(file.filepath, (unlinkErr) => {
+              if (unlinkErr) console.warn("Failed to delete temp file:", unlinkErr);
+            });
+          } catch (uploadErr) {
+            console.error("Upload to R2 error:", uploadErr);
+            return resolve(
+              NextResponse.json(
+                { status: "error", message: "Failed to upload image to R2." },
+                { status: 500 }
+              )
+            );
+          }
+        }
+
+        try {
+          const newMemberRank = await createMemberRank({
+            member_rank_name: fields.member_rank_name?.[0],
+            member_rank_base: parseInt(fields.member_rank_base?.[0]),
+            member_rank_logo: imageUrl,
+          });
+
+          return resolve(
+            NextResponse.json(
+              {
+                status: "success",
+                message: "Member rank created successfully",
+                data: newMemberRank,
+              },
+              { status: 201 }
+            )
+          );
+        } catch (dbErr) {
+          console.error("DB error:", dbErr);
+          return resolve(
+            NextResponse.json(
+              { status: "error", message: "Failed to create member rank." },
+              { status: 500 }
+            )
+          );
+        }
       });
     } catch (error) {
-      console.error("Upload handling error:", error);
+      console.error("Unexpected error:", error);
       return resolve(
-        NextResponse.json({ status: "error", message: error.message }, { status: 500 })
+        NextResponse.json({ status: "error", message: error.message || "Unknown error" }, { status: 500 })
       );
     }
   });

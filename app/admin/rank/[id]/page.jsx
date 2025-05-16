@@ -13,6 +13,7 @@ function page() {
   const [rank, setRank] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submit, setSubmit] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     member_rank_name: "",

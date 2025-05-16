@@ -15,7 +15,7 @@ export const createMemberRank = async (data) => {
         .string()
         .refine(
           (val) =>
-            val.startsWith("/tmp/") &&
+            val.startsWith("https://") &&
             (val.endsWith(".png") ||
               val.endsWith(".jpg") ||
               val.endsWith(".jpeg")),
