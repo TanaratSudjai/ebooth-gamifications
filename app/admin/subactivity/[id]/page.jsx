@@ -8,7 +8,7 @@ import Image from "next/image";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import {
   toSQLDatetimeFormat,
-  DisplayFormathSQLDatetimeFormat,
+  formatDisplayDateTime,
 } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -25,6 +25,8 @@ function page() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedIdSub, setSelectedIdSub] = useState(null);
   const [loading, setLoading] = useState(true);
+  let date_start = "";
+  let date_end = "";
   const [formData, setFormData] = useState({
     sub_activity_name: "",
     sub_activity_description: "",
@@ -52,6 +54,8 @@ function page() {
       const res_sub = await axios.get(
         `/api/subActivity/getSubByActivity/${id}`
       );
+      // console.log("sub data : ", res_sub.data.data[0].sub_activity_start);
+      // console.log("sub data : ", res_sub.data.data[0].sub_activity_end);
 
       setSubActivity(res_sub.data.data);
       setLoading(false);
@@ -192,9 +196,17 @@ function page() {
                     </div>
                     <p className="p-1">{sub.sub_activity_description}</p>
                     <div className="flex flex-col md:flex-row gap-2 break-all">
-                      {DisplayFormathSQLDatetimeFormat(sub.sub_activity_start)}
-                      <p className="text-red-500"> จนถึง</p>
-                      {DisplayFormathSQLDatetimeFormat(sub.sub_activity_end)}
+                      <div className="flex flex-col md:flex-row gap-2 break-all">
+                        <span>
+                          วันที่ {sub.sub_activity_start.split("T")[0]} เวลา{" "}
+                          {sub.sub_activity_start.split("T")[1].slice(0, 5)}
+                        </span>
+                        <p className="text-red-500">จนถึง</p>
+                        <span>
+                          วันที่ {sub.sub_activity_end.split("T")[0]} เวลา{" "}
+                          {sub.sub_activity_end.split("T")[1].slice(0, 5)}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex gap-5">
                       <p>จำนวนที่รับ {sub.sub_activity_max}</p>
