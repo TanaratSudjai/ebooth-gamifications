@@ -70,7 +70,6 @@ export const createSubActivity = async (data) => {
       [sub_activity_id]
     );
 
-
     for (const mission_id of mission_ids) {
       const [result] = await db.query(
         `INSERT INTO activity_mission (activity_id, mission_id, sub_activity_id) VALUES (?, ?, ?)`,
@@ -79,8 +78,12 @@ export const createSubActivity = async (data) => {
     }
 
     const qrData = `main,${activity_id} ,sub,${sub_activity_id}`;
-    const qrImagePath = path.join(process.cwd(), '/public', 'qrcodes', `${sub_activity_id}.png`);
-
+    const qrImagePath = path.join(
+      process.cwd(),
+      "/public",
+      "qrcodes",
+      `${sub_activity_id}.png`
+    );
 
     const qrFolder = path.dirname(qrImagePath);
     if (!fs.existsSync(qrFolder)) {
@@ -97,7 +100,6 @@ export const createSubActivity = async (data) => {
       ...newActivityRows[0],
       qr_image_url: `/qrcodes/${sub_activity_id}.png`,
     };
-
   } catch (error) {
     console.error("❌ createSubActivity error:", error);
     throw new Error("Create subActivity failed: " + error.message);
@@ -228,7 +230,7 @@ export const checkin = async (data) => {
         [sub_activity_id, member_id, activity_id]
       );
 
-      return {message : "Check-in updated successfully",status: 200};
+      return { message: "Check-in updated successfully", status: 200 };
     }
 
     if (checkinRows.length === 0) {
@@ -238,7 +240,7 @@ export const checkin = async (data) => {
       );
 
       if (checkSubActivityMax.length > 0) {
-        return {message : "Sub activity is full or not found", status: 400};
+        return { message: "Sub activity is full or not found", status: 400 };
       }
 
       const [checkSubactivityPrice] = await db.query(
@@ -247,18 +249,18 @@ export const checkin = async (data) => {
       );
 
       if (checkSubactivityPrice.length > 0) {
-        return {message : "Not Allowed it not free", status: 400};
-      } 
+        return { message: "Not Allowed it not free", status: 400 };
+      }
 
       const [insertCheckIn] = await db.query(
         "INSERT INTO checkin ( member_id, activity_id,sub_activity_id, checkin_time, is_checkin) VALUES (?, ?, ?, NOW(),?)",
-        [member_id, activity_id,sub_activity_id, 1]
+        [member_id, activity_id, sub_activity_id, 1]
       );
-      return {messgae : "Check-in successful", status: 200};
+      return { messgae: "Check-in successful", status: 200 };
     }
-
   } catch (error) {
     console.error("❌ checkin error:", error);
-    return("Check-in failed: " + error.message);
+    return "Check-in failed: " + error.message;
   }
 };
+

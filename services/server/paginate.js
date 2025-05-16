@@ -59,14 +59,18 @@ export const getPaginatedData = async (tableName, page = 1, limit = 10) => {
         totalPages,
       };
     }
-
   } catch (error) {
     console.error("Error fetching paginated data:", error); // Log the error for debugging
     throw new Error("Failed to fetch paginated data"); // Throw a generic error message
-  };
-}
+  }
+};
 
-export const getPaginatedDataSubByActivity = async (tableName, id, page = 1, limit = 10) => {
+export const getPaginatedDataSubByActivity = async (
+  tableName,
+  id,
+  page = 1,
+  limit = 10
+) => {
   try {
     const offset = (page - 1) * limit;
 
@@ -75,11 +79,15 @@ export const getPaginatedDataSubByActivity = async (tableName, id, page = 1, lim
       throw new Error("Invalid table name");
     }
 
-    const [rows] = await db.query(
+    let [rows] = await db.query(
       `SELECT * FROM \`${tableName}\` WHERE activity_id = ? LIMIT ? OFFSET ?`,
       [id, limit, offset]
     );
 
+   console.log("rows", rows[0].sub_activity_start);
+   console.log("rows", rows[0].sub_activity_end);
+
+   
 
     const [[{ count }]] = await db.query(
       `SELECT COUNT(*) AS count FROM \`${tableName}\``
@@ -95,5 +103,5 @@ export const getPaginatedDataSubByActivity = async (tableName, id, page = 1, lim
   } catch (error) {
     console.error("Error fetching paginated data:", error); // Log the error for debugging
     throw new Error("Failed to fetch paginated data"); // Throw a generic error message
-  };
-} 
+  }
+};

@@ -8,25 +8,30 @@ export async function GET(req, { params }) {
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 10;
     const { id } = params;
-    const subActivity = await getPaginatedDataSubByActivity(table,id,page,limit);
-    return NextResponse.json(
-        {
-          status: "success",
-          message: "Activities fetched successfully",
-          data: subActivity.data,
-          pagination: {
-            page,
-            limit,
-            totalPages: subActivity.totalPages,
-            totalItems: subActivity.totalItems,
-          },
-        },
-        { status: 200 }
-      );
-  } catch (error) {
-    return NextResponse.json(
-      { message: error.message },
-      { status: 500 }
+    const subActivity = await getPaginatedDataSubByActivity(
+      table,
+      id,
+      page,
+      limit
     );
+    if (!subActivity) {
+      return [];
+    }
+    return NextResponse.json(
+      {
+        status: "success",
+        message: "Activities fetched successfully",
+        data: subActivity.data,
+        pagination: {
+          page,
+          limit,
+          totalPages: subActivity.totalPages,
+          totalItems: subActivity.totalItems,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
