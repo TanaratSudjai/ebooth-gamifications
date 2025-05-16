@@ -1,3 +1,9 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 export function toDatetimeLocalString(dateStr) {
   if (!dateStr) return "";
 
@@ -25,33 +31,10 @@ export function toSQLDatetimeFormat(dateStr) {
 
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 }
+
 export function DisplayFormathSQLDatetimeFormat(dateStr) {
-  if (!dateStr) return "";
-
-  const dateUTC = new Date(dateStr);
-  if (isNaN(dateUTC.getTime())) return "";
-
-  // ลบออก 7 ชั่วโมง เพื่อแสดงเป็นเวลาประเทศไทย
-  const dateBangkok = new Date(dateUTC.getTime() - 7 * 60 * 60 * 1000);
-
-  const options = {
-    timeZone: "Asia/Bangkok",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  };
-
-  const formatter = new Intl.DateTimeFormat("th-TH", options);
-  const parts = formatter.formatToParts(dateBangkok);
-
-  const day = parts.find((p) => p.type === "day")?.value;
-  const month = parts.find((p) => p.type === "month")?.value;
-  const year = parts.find((p) => p.type === "year")?.value;
-  const hour = parts.find((p) => p.type === "hour")?.value;
-  const minute = parts.find((p) => p.type === "minute")?.value;
-
-  return `วันที่ ${day}/${month}/${year} เวลา ${hour}:${minute}`;
+  return dayjs
+    .utc(dateStr)
+    .tz("Asia/Bangkok")
+    .format("วันที่ DD/MM/YYYY เวลา HH:mm");
 }
