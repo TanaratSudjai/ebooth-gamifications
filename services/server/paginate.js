@@ -84,9 +84,6 @@ export const getPaginatedDataSubByActivity = async (
       [id, limit, offset]
     );
 
-   console.log("rows", rows[0].sub_activity_start);
-   console.log("rows", rows[0].sub_activity_end);
-
    
 
     const [[{ count }]] = await db.query(

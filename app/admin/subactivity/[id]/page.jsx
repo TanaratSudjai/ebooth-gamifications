@@ -54,6 +54,8 @@ function page() {
       const res_sub = await axios.get(
         `/api/subActivity/getSubByActivity/${id}`
       );
+      console.log("res_sub : ", res_sub.data);
+      
       if (res_sub.data.length > 0) {
         setSubActivity(res_sub.data);
         setLoading(false);
