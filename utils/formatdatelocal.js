@@ -28,10 +28,12 @@ export function toSQLDatetimeFormat(dateStr) {
 export function DisplayFormathSQLDatetimeFormat(dateStr) {
   if (!dateStr) return "";
 
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
+  const dateUTC = new Date(dateStr);
+  if (isNaN(dateUTC.getTime())) return "";
 
-  // ปรับเป็นโซนเวลาไทย
+  // ลบออก 7 ชั่วโมง เพื่อแสดงเป็นเวลาประเทศไทย
+  const dateBangkok = new Date(dateUTC.getTime() + 7 * 60 * 60 * 1000);
+
   const options = {
     timeZone: "Asia/Bangkok",
     day: "2-digit",
@@ -43,9 +45,8 @@ export function DisplayFormathSQLDatetimeFormat(dateStr) {
   };
 
   const formatter = new Intl.DateTimeFormat("th-TH", options);
-  const parts = formatter.formatToParts(date);
+  const parts = formatter.formatToParts(dateBangkok);
 
-  // แยกส่วนของวันที่และเวลา
   const day = parts.find((p) => p.type === "day")?.value;
   const month = parts.find((p) => p.type === "month")?.value;
   const year = parts.find((p) => p.type === "year")?.value;
