@@ -32,7 +32,7 @@ export function DisplayFormathSQLDatetimeFormat(dateStr) {
   if (isNaN(dateUTC.getTime())) return "";
 
   // ลบออก 7 ชั่วโมง เพื่อแสดงเป็นเวลาประเทศไทย
-  const dateBangkok = new Date(dateUTC.getTime() + 7 * 60 * 60 * 1000);
+  const dateBangkok = new Date(dateUTC.getTime() - 7 * 60 * 60 * 1000);
 
   const options = {
     timeZone: "Asia/Bangkok",
