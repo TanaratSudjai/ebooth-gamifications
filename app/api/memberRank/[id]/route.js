@@ -9,6 +9,8 @@ import path from "path";
 import ReadableStreamToNode from "@/utils/readable";
 import { IncomingForm } from "formidable";
 import db from "@/services/server/db";
+import { deleteFromR2 } from "@/utils/r2Delete";
+import { updateToR2 } from "@/utils/r2Update";
 
 export async function GET(request, { params }) {
   const { id } = params;
@@ -34,66 +36,44 @@ export async function GET(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const { id } = params;
-
-  const memberRank = await getMemberRankById(id);
-
-  if (!memberRank) {
-    return NextResponse.json(
-      {
-        status: "error",
-        message: "Member rank not found",
-      },
-      { status: 404 }
-    );
-  }
-
-  const imageFileName = memberRank.member_rank_logo.split("/").pop();
-  const imagePath = path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    "member_ranks",
-    imageFileName
-  );
+  const id = params.id;
 
   try {
-    // Delete image if it exists
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
+    const rank = await getMemberRankById(id);
+    if (!rank) {
+      return NextResponse.json({ status: "error", message: "Not found" }, { status: 404 });
     }
 
-    // Delete from database
-    const result = await deleteMemberRank(id);
+    const logoUrl = rank.member_rank_logo;
 
-    return NextResponse.json(
-      {
-        status: "success",
-        message: `Member rank deleted successfully along with image ${imageFileName}.`,
-        dbResult: result, // Optional: return DB result if useful
-      },
-      { status: 200 }
-    );
+    // Extract R2 key from the full public URL
+    // Example: "https://...r2.dev/member_ranks/12345.png" → "member_ranks/12345.png"
+    const r2Key = logoUrl?.split(process.env.R2_PUBLIC_URL + "/")[1];
+
+    if (r2Key) {
+      await deleteFromR2(r2Key);
+    }
+
+    await deleteMemberRank(id);
+
+    return NextResponse.json({
+      status: "success",
+      message: "Member rank deleted",
+    });
   } catch (error) {
-    return NextResponse.json(
-      {
-        status: "error",
-        message: error.message || "Something went wrong",
-      },
-      { status: 500 }
-    );
+    console.error("DELETE member rank error:", error);
+    return NextResponse.json({ status: "error", message: "Failed to delete" }, { status: 500 });
   }
 }
 
 export async function PUT(request, { params }) {
   const { id } = params;
-  // This is the magic that converts Web Request to a Node stream
+
   const form = new IncomingForm({
-    uploadDir: path.join(process.cwd(), "/public/uploads/member_ranks"),
     keepExtensions: true,
   });
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     try {
       const reader = request.body?.getReader();
 
@@ -116,8 +96,6 @@ export async function PUT(request, { params }) {
       }
 
       const buffer = Buffer.concat(chunks);
-
-      // Create a mock Node.js request stream
       const mockReq = new ReadableStreamToNode(buffer, request.headers);
 
       form.parse(mockReq, async (err, fields, files) => {
@@ -131,27 +109,46 @@ export async function PUT(request, { params }) {
           );
         }
 
-        const file = files.member_rank_logo?.[0];
         let imageUrl;
+        let oldImageUrl;
 
-        // ✅ If a new file is uploaded, use its path
-        if (file && file.filepath) {
-          imageUrl = `/uploads/member_ranks/${path.basename(file.filepath)}`;
-        } else {
-          // ✅ No new image uploaded: get the current logo from DB
-          const [rows] = await db.query(
-            "SELECT member_rank_logo FROM member_rank WHERE member_rank_id = ?",
-            [id]
+        // Get current data from DB
+        const [rows] = await db.query(
+          "SELECT member_rank_logo FROM member_rank WHERE member_rank_id = ?",
+          [id]
+        );
+
+        if (rows.length === 0) {
+          return resolve(
+            NextResponse.json(
+              { status: "error", message: "Member rank not found" },
+              { status: 404 }
+            )
           );
-
-          if (rows.length === 0) {
-            throw new Error("Member rank not found");
-          }
-
-          imageUrl = rows[0].member_rank_logo;
         }
 
-        const newMemberRank = await updateMemberRank(id, {
+        oldImageUrl = rows[0].member_rank_logo;
+
+        const file = files.member_rank_logo?.[0];
+
+        if (file && file.filepath) {
+          const uniqueFileName = `${Date.now()}-${path.basename(file.originalFilename)}`;
+          const r2Key = `member_ranks/${uniqueFileName}`;
+
+          // Upload new image to R2
+          imageUrl = await updateToR2(file.filepath, r2Key);
+
+          // Delete old image from R2
+          if (oldImageUrl && oldImageUrl.includes("r2.dev")) {
+            const oldKey = oldImageUrl.split("/").slice(-2).join("/");
+            await deleteFromR2(oldKey);
+          }
+        } else {
+          imageUrl = oldImageUrl; // Keep old image if no new one uploaded
+        }
+
+        // Update in DB
+        const updated = await updateMemberRank(id, {
           member_rank_name: fields.member_rank_name?.[0],
           member_rank_base: parseInt(fields.member_rank_base?.[0]),
           member_rank_logo: imageUrl,
@@ -161,15 +158,15 @@ export async function PUT(request, { params }) {
           NextResponse.json(
             {
               status: "success",
-              message: "Member rank created successfully",
-              data: newMemberRank,
+              message: "Member rank updated successfully",
+              data: updated,
             },
-            { status: 201 }
+            { status: 200 }
           )
         );
       });
     } catch (error) {
-      console.error("Upload handling error:", error);
+      console.error("PUT /memberRank error:", error);
       return resolve(
         NextResponse.json(
           { status: "error", message: error.message },

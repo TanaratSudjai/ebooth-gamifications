@@ -154,19 +154,19 @@ export const updateMemberRank = async (id, data) => {
     }
 
     // ✅ Delete old image if a new one is provided and it's different
-    if (member_rank_logo && member_rank_logo !== oldImage) {
-      const oldImagePath = path.join(
-        process.cwd(),
-        "public",
-        "uploads",
-        "member_ranks",
-        oldImage.split("/").pop()
-      );
+    // if (member_rank_logo && member_rank_logo !== oldImage) {
+    //   const oldImagePath = path.join(
+    //     process.cwd(),
+    //     "public",
+    //     "uploads",
+    //     "member_ranks",
+    //     oldImage.split("/").pop()
+    //   );
 
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
-    }
+    //   if (fs.existsSync(oldImagePath)) {
+    //     fs.unlinkSync(oldImagePath);
+    //   }
+    // }
 
     // ✅ Return updated row
     const [updatedMemberRankRows] = await db.query(
