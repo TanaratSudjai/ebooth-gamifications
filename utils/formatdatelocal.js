@@ -32,9 +32,22 @@ export function toSQLDatetimeFormat(dateStr) {
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 }
 
-export function DisplayFormathSQLDatetimeFormat(dateStr) {
-  return dayjs
-    .utc(dateStr)
-    .tz("Asia/Bangkok")
-    .format("วันที่ DD/MM/YYYY เวลา HH:mm");
+export function formatDisplayDateTime(isoString) {
+  if (!isoString) return "";
+
+  const dateUTC = new Date(isoString);
+  if (isNaN(dateUTC.getTime())) return "";
+
+  const dateBangkok = new Date(dateUTC.getTime() + 7 * 60 * 60 * 1000); // UTC+7
+
+  const options = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  };
+
+  return dateBangkok.toLocaleString("th-TH", options); // ex: 17/05/2025, 16:00
 }
