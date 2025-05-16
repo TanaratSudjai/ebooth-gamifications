@@ -1,13 +1,24 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import dayjs from "dayjs";
-import { Building2, MapPin, FileText, Phone, Calendar, DollarSign, Users, Clock } from "lucide-react";
+import {
+  Building2,
+  MapPin,
+  FileText,
+  Phone,
+  Calendar,
+  DollarSign,
+  Users,
+  Clock,
+} from "lucide-react";
 
 function Organize({ id = "" }) {
   const [organize, setOrganize] = useState([]);
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const fetchData = async () => {
     try {
@@ -21,6 +32,11 @@ function Organize({ id = "" }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const henddleToaddActivity = async (id) => {
+    sessionStorage.setItem("activityId", id);
+    router.push("/admin/activity/0");
   };
 
   useEffect(() => {
@@ -57,26 +73,38 @@ function Organize({ id = "" }) {
                 ข้อมูลองค์กร
               </h2>
             </div>
-            
+
             <div className="p-6">
               <h3 className="text-2xl font-bold text-gray-800 mb-4">
                 {organize.organize.organize_name}
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <MapPin className="mr-2 text-amber-500 flex-shrink-0 mt-1" size={18} />
+                  <MapPin
+                    className="mr-2 text-amber-500 flex-shrink-0 mt-1"
+                    size={18}
+                  />
                   <div>
                     <span className="font-medium text-gray-700">ที่อยู่:</span>
-                    <p className="text-gray-600">{organize.organize.organize_address || "-"}</p>
+                    <p className="text-gray-600">
+                      {organize.organize.organize_address || "-"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start">
-                  <FileText className="mr-2 text-amber-500 flex-shrink-0 mt-1" size={18} />
+                  <FileText
+                    className="mr-2 text-amber-500 flex-shrink-0 mt-1"
+                    size={18}
+                  />
                   <div>
-                    <span className="font-medium text-gray-700">รายละเอียด:</span>
-                    <p className="text-gray-600">{organize.organize.organize_description || "-"}</p>
+                    <span className="font-medium text-gray-700">
+                      รายละเอียด:
+                    </span>
+                    <p className="text-gray-600">
+                      {organize.organize.organize_description || "-"}
+                    </p>
                   </div>
                 </div>
 
@@ -84,7 +112,9 @@ function Organize({ id = "" }) {
                   <Phone className="mr-2 text-amber-500" size={18} />
                   <div>
                     <span className="font-medium text-gray-700">ติดต่อ:</span>
-                    <span className="text-gray-600 ml-1">{organize.organize.organize_tel || "-"}</span>
+                    <span className="text-gray-600 ml-1">
+                      {organize.organize.organize_tel || "-"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -101,50 +131,73 @@ function Organize({ id = "" }) {
                 กิจกรรมทั้งหมด
               </h3>
             </div>
-            
+
             <div className="p-4 overflow-y-auto max-h-[700px]">
               {Array.isArray(activity) && activity.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {activity.map((activity, index) => (
-                    <div key={index} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div
+                      key={index}
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                    >
                       <div className="bg-amber-100 px-4 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-gray-800 text-lg truncate" title={activity.activity_name}>
+                        <h4
+                          className="font-bold text-gray-800 text-lg truncate"
+                          title={activity.activity_name}
+                        >
                           {activity.activity_name}
                         </h4>
                       </div>
-                      
+
                       <div className="p-4 space-y-3">
                         <div className="text-sm text-gray-600 max-h-24 overflow-y-auto">
                           {activity.activity_description}
                         </div>
-                        
+
                         <div className="flex items-center text-sm border-t border-gray-100 pt-3">
-                          <DollarSign size={16} className="text-amber-500 mr-1" />
+                          <DollarSign
+                            size={16}
+                            className="text-amber-500 mr-1"
+                          />
                           <span className="text-gray-700">ราคา: </span>
                           <span className="font-semibold text-amber-600 ml-1">
                             {activity.activity_price.toLocaleString()} บาท
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center text-sm">
                           <Users size={16} className="text-amber-500 mr-1" />
                           <span className="text-gray-700">ที่ว่าง: </span>
-                          <span className="font-semibold text-amber-600 ml-1">{activity.activity_max}</span>
+                          <span className="font-semibold text-amber-600 ml-1">
+                            {activity.activity_max}
+                          </span>
                         </div>
-                        
+
                         <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 mt-2">
                           <div className="flex items-center text-sm">
                             <Clock size={16} className="text-amber-500 mr-1" />
                             <span className="text-gray-700">ระยะเวลา: </span>
                             <span className="font-semibold text-amber-600 ml-1">
-                              {dayjs(activity.activity_end).diff(dayjs(activity.activity_start), "day") + 1} วัน
+                              {dayjs(activity.activity_end).diff(
+                                dayjs(activity.activity_start),
+                                "day"
+                              ) + 1}{" "}
+                              วัน
                             </span>
                           </div>
-                          
+
                           <div className="text-xs text-gray-600 mt-1">
-                            <span>{dayjs(activity.activity_start).format("DD MMM YYYY")}</span>
+                            <span>
+                              {dayjs(activity.activity_start).format(
+                                "DD MMM YYYY"
+                              )}
+                            </span>
                             <span className="mx-1">-</span>
-                            <span>{dayjs(activity.activity_end).format("DD MMM YYYY")}</span>
+                            <span>
+                              {dayjs(activity.activity_end).format(
+                                "DD MMM YYYY"
+                              )}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -155,6 +208,12 @@ function Organize({ id = "" }) {
                 <div className="flex flex-col items-center justify-center py-10 text-gray-500">
                   <Calendar size={48} className="text-gray-300 mb-2" />
                   <p className="font-medium">ไม่มีกิจกรรมที่ต้องจัดการ</p>
+                  <button
+                    className="btn bg-amber-300 hover:bg-amber-400 hover:scale-102 border-none rounded-md transform transition duration-200 ease-in-out text-black mt-4"
+                    onClick={() => henddleToaddActivity(id)}
+                  >
+                    เพิ่มกิจกรรม
+                  </button>
                 </div>
               )}
             </div>

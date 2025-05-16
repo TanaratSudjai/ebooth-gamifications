@@ -86,7 +86,7 @@ export const createActivity = async (data) => {
         [activityId, mission_id]
       );
     }
-      
+
     const [newActivityRows] = await db.query(
       "SELECT * FROM activity WHERE activity_id = ?",
       [activityId]
@@ -95,17 +95,27 @@ export const createActivity = async (data) => {
     return {
       ...newActivityRows[0],
     };
-    }
-  catch (error) {
+  } catch (error) {
     console.error("Error creating activity:", error); // Log the error for debugging
     throw new Error("Failed to create activity"); // Throw a generic error message
   }
-}
+};
 
 export const getActivityById = async (id) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM activity WHERE activity_id = ?",
+      `SELECT
+        activity.*,
+        COUNT(checkin.member_id) AS total_participants
+      FROM
+          activity
+      LEFT JOIN
+          checkin ON activity.activity_id = checkin.activity_id
+      WHERE
+          activity.activity_id = ?
+      GROUP BY
+          activity.activity_id, activity.activity_name;
+      `,
       [id]
     );
 
@@ -244,7 +254,6 @@ export const getActivityData = async (page = 1, limit = 10) => {
       totalItems: count,
       totalPages,
     };
-
   } catch (error) {
     console.error("Error fetching paginated data:", error);
     throw new Error("Failed to fetch paginated data");
@@ -253,12 +262,10 @@ export const getActivityData = async (page = 1, limit = 10) => {
 
 export const getActivityByPersonnelId = async (personnel_id) => {
   try {
-
     const [getPersonnel] = await db.query(
       `SELECT * FROM personnel WHERE personnel_id = ?`,
       [personnel_id]
     );
-
 
     const [getOrganizeId] = await db.query(
       `SELECT organize_id FROM personnel WHERE personnel_id = ?`,
@@ -281,7 +288,7 @@ export const getActivityByPersonnelId = async (personnel_id) => {
     return {
       personnel: getPersonnel,
       activity: getActivity,
-    }; 
+    };
   } catch (error) {
     console.error("Error fetching activity by personnel ID:", error);
     throw new Error("Failed to fetch activities");

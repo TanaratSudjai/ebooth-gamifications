@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import { useAlert } from "@/contexts/AlertContext";
+
 function page() {
   const params = useParams();
   const personnelId = Number(params?.id);
@@ -47,11 +48,10 @@ function page() {
       if (personnelId !== 0) {
         try {
           const response = await axios.get(`/api/personnel/${personnelId}`);
-
           if (response.status === 200) {
+            setLoading(false);
             setFormData(response.data);
           }
-          setLoading(true)
         } catch (err) {
           console.error("Error fetching activity data:", err);
         }
@@ -65,7 +65,7 @@ function page() {
     e.preventDefault();
     setLoading(true);
     console.log("formData", formData);
-
+    setSubmit(true);
     const personnelData = {
       ...formData,
       personnel_name: formData.personnel_name,
@@ -88,6 +88,7 @@ function page() {
         } else {
           showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
         }
+
         clearForm();
       } else {
         response = await axios.put(
@@ -95,8 +96,8 @@ function page() {
           personnelData
         );
         if (response.status === 200) {
-          showSuccess("ทำรายการสำเร็จ", "ทำการบันทึกข้อมูลสําเร็จ");
           router.push("/admin/personnel");
+          showSuccess("ทำรายการสำเร็จ", "ทำการบันทึกข้อมูลสําเร็จ");
         } else {
           showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
         }
@@ -131,7 +132,6 @@ function page() {
       )}
 
       <div className="container mx-auto mt-4">
-
         <form
           onSubmit={handleSubmit}
           className="flex flex-col justify-start gap-4"
@@ -250,6 +250,7 @@ function page() {
 
           <div className="flex justify-end">
             <button
+              disabled={submit}
               className="bg-yellow-500 hover:scale-105 transform  transition duration-300 ease-in-out  text-black font-bold cursor-pointer p-3 rounded-lg "
               type="submit"
             >
@@ -257,7 +258,6 @@ function page() {
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );
