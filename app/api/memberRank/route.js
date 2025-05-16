@@ -29,7 +29,6 @@ export const config = {
 
 export async function POST(request) {
   const form = new IncomingForm({
-    uploadDir: path.join(process.cwd(), "/tmp/uploads/member_ranks"),
     keepExtensions: true,
   });
 
