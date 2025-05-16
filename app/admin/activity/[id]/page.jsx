@@ -30,7 +30,6 @@ function page() {
     activity_end: "",
     activity_max: 1,
     reward_points: 1,
-    // is_multi_day: false,
     organize_id: 0,
     activity_price: 0,
     mission_ids: [],
@@ -39,7 +38,8 @@ function page() {
   // use sweetalert2 for error and success message
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const parsedValue = type === "number" || name === "mission_ids" ? Number(value) : value;
+    const parsedValue =
+      type === "number" || name === "mission_ids" ? Number(value) : value;
 
     if (name === "mission_ids") {
       setFormData((prev) => {
@@ -58,7 +58,6 @@ function page() {
       }));
     }
   };
-
 
   const fetchOrganize = async () => {
     try {
@@ -80,9 +79,10 @@ function page() {
           const data = response.data;
 
           // ตรวจสอบว่า mission_ids เป็น string หรือ array แล้วแปลงเป็น number[]
-          const missionIds = typeof data.mission_ids === "string"
-            ? data.mission_ids.split(",").map((id) => Number(id))
-            : Array.isArray(data.mission_ids)
+          const missionIds =
+            typeof data.mission_ids === "string"
+              ? data.mission_ids.split(",").map((id) => Number(id))
+              : Array.isArray(data.mission_ids)
               ? data.mission_ids.map((id) => Number(id))
               : [];
 
@@ -96,7 +96,6 @@ function page() {
       }
     }
   };
-
 
   const fecthMission = async () => {
     try {
@@ -231,6 +230,7 @@ function page() {
                   }));
                 }}
                 timeInputLabel="Time:"
+                showTimeInput
                 dateFormat="MM/dd/yyyy h:mm aa"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full "
                 required
@@ -250,6 +250,8 @@ function page() {
                     activity_end: date,
                   }));
                 }}
+                timeInputLabel="Time:"
+                showTimeInput
                 wrapperClassName="w-full"
                 dateFormat="MM/dd/yyyy h:mm aa"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full"
@@ -258,7 +260,6 @@ function page() {
               />
             </div>
           </div>
-
 
           <div className="flex w-full gap-2 flex-col md:flex-row">
             <div className="flex w-full  gap-2 justify-center items-center">
@@ -321,25 +322,24 @@ function page() {
                 </select>
               </div>
             </div>
-
           </div>
-
-
-
 
           {/* map mission */}
           <label>เลือกเกมส์ในกิจกรรม</label>
           <div className="flex gap-2 flex-wrap">
             {mission.map((missionItem) => {
-              const isChecked = formData.mission_ids.includes(Number(missionItem.mission_id));
+              const isChecked = formData.mission_ids.includes(
+                Number(missionItem.mission_id)
+              );
 
               return (
                 <label
                   key={missionItem.mission_id}
-                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isChecked
-                    ? "bg-yellow-100 border-yellow-500 shadow-md"
-                    : "bg-white border-gray-200"
-                    }`}
+                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+                    isChecked
+                      ? "bg-yellow-100 border-yellow-500 shadow-md"
+                      : "bg-white border-gray-200"
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -353,7 +353,6 @@ function page() {
                 </label>
               );
             })}
-
           </div>
 
           <div className="flex justify-end">
