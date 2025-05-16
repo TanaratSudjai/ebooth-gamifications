@@ -38,7 +38,7 @@ export function formatDisplayDateTime(isoString) {
   const dateUTC = new Date(isoString);
   if (isNaN(dateUTC.getTime())) return "";
 
-  const dateBangkok = new Date(dateUTC.getTime() + 7 * 60 * 60 * 1000); // UTC+7
+  const dateBangkok = new Date(dateUTC.getTime() * 60 * 60 * 1000); // UTC+7
 
   const options = {
     day: "2-digit",
