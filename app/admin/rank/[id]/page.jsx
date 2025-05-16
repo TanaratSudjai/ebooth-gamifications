@@ -43,7 +43,7 @@ function page() {
 
     try {
       console.log(formData);
-      
+
       let response;
       if (id == 0) {
         response = await axios.post("/api/memberRank", payload);
@@ -76,7 +76,7 @@ function page() {
     try {
       const response = await axios.get(`/api/memberRank/${id}`);
       setRank(response.data.data);
-      console.log(response.data.data.member_rank_logo);
+      console.log("logo is " + response.data.data.member_rank_logo);
       setFormData(response.data.data);
       formData.member_rank_logo = response.data.data.member_rank_logo;
     } catch (error) {
@@ -147,22 +147,15 @@ function page() {
           </div>
           <div className="">
             <label className="block mb-1">สัญลักษณ์</label>
-            {formData.member_rank_logo &&
-              (typeof formData.member_rank_logo === "object" ? (
-                <img
-                  src={URL.createObjectURL(formData.member_rank_logo)}
-                  alt="preview"
-                  className="w-32 h-32 object-cover mt-2 rounded"
-                />
-              ) : (
-                <Image
-                  src={formData.member_rank_logo}
-                  alt="preview"
-                  className="w-32 h-32 object-cover mt-2 rounded"
-                  width={100}
-                  height={100}
-                />
-              ))}
+            {formData.member_rank_logo && (
+              <Image
+                src={formData.member_rank_logo}
+                alt="preview"
+                className="w-32 h-32 object-cover mt-2 rounded"
+                width={100}
+                height={100}
+              />
+            )}
           </div>
           <div className="flex justify-end">
             <button
