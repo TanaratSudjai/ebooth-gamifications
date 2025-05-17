@@ -3,6 +3,8 @@ import { z } from "zod"; // ใช้สำหรับการตรวจส�
 const path = require("path"); // เพิ่มการ require โมดูล path
 const fs = require("fs");
 const QRCode = require("qrcode"); // โมดูลสำหรับการสร้าง QR Code
+import { uploadQR } from "@/utils/uploadQR"; // โมดูลสำหรับการอัปโหลด QR Code ไปยัง Cloudflare R2
+
 export const createSubActivity = async (data) => {
   try {
     const subActivitySchema = z.object({
@@ -24,9 +26,7 @@ export const createSubActivity = async (data) => {
       sub_activity_max: z.number().min(1, "Max member is required"),
       sub_activity_point: z.number().min(1, "Reward points is required"),
       sub_activity_price: z.number().min(0, "Price is required"),
-      mission_ids: z.array(
-        z.number().int().positive("required sub activity id")
-      ),
+      mission_ids: z.array(z.number().int().positive("required sub activity id")),
     });
 
     const subActivityResult = subActivitySchema.safeParse(data);
@@ -49,8 +49,8 @@ export const createSubActivity = async (data) => {
 
     const [result] = await db.query(
       `INSERT INTO sub_activity (
-          sub_activity_name, activity_id, sub_activity_description, sub_activity_start, sub_activity_end, sub_activity_max, sub_activity_point, sub_activity_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        sub_activity_name, activity_id, sub_activity_description, sub_activity_start, sub_activity_end, sub_activity_max, sub_activity_point, sub_activity_price
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         sub_activity_name,
         activity_id,
@@ -65,46 +65,42 @@ export const createSubActivity = async (data) => {
 
     const sub_activity_id = result.insertId;
 
-    const [newActivityRows] = await db.query(
-      "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
-      [sub_activity_id]
-    );
-
     for (const mission_id of mission_ids) {
-      const [result] = await db.query(
+      await db.query(
         `INSERT INTO activity_mission (activity_id, mission_id, sub_activity_id) VALUES (?, ?, ?)`,
         [activity_id, mission_id, sub_activity_id]
       );
     }
 
-    const qrData = `main,${activity_id} ,sub,${sub_activity_id}`;
-    const qrImagePath = path.join(
-      process.cwd(),
-      "/public",
-      "qrcodes",
-      `${sub_activity_id}.png`
-    );
+    // ✅ Generate QR Code Buffer
+    const qrData = `main,${activity_id},sub,${sub_activity_id}`;
+    const qrBuffer = await QRCode.toBuffer(qrData);
 
-    const qrFolder = path.dirname(qrImagePath);
-    if (!fs.existsSync(qrFolder)) {
-      fs.mkdirSync(qrFolder, { recursive: true });
-    }
+    // ✅ Upload to Cloudflare R2
+    const r2Key = `qrcode/${sub_activity_id}.png`;
+    const qrImageUrl = await uploadQR(qrBuffer, r2Key); // ⬅️ Returns public R2 URL
 
-    await QRCode.toFile(qrImagePath, qrData);
+    // ✅ Store R2 public URL
     await db.query(
       `UPDATE sub_activity SET qr_image_url = ? WHERE sub_activity_id = ?`,
-      [`/qrcodes/${sub_activity_id}.png`, sub_activity_id]
+      [qrImageUrl, sub_activity_id]
+    );
+
+    const [newActivityRows] = await db.query(
+      "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
+      [sub_activity_id]
     );
 
     return {
       ...newActivityRows[0],
-      qr_image_url: `/qrcodes/${sub_activity_id}.png`,
+      qr_image_url: qrImageUrl,
     };
   } catch (error) {
     console.error("❌ createSubActivity error:", error);
     throw new Error("Create subActivity failed: " + error.message);
   }
 };
+
 
 export const getSubActivityById = async (id) => {
   try {
