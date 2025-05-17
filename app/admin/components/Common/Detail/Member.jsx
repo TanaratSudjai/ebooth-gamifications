@@ -72,7 +72,7 @@ function Member({ id = "" }) {
 
   return (
     <div className="w-full mx-auto p-4">
-      <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Member details card - Left side */}
         <div className="md:col-span-1">
           <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
@@ -168,7 +168,7 @@ function Member({ id = "" }) {
                               .post(`/api/checkin/undoActivity`, {
                                 activity_id: checkIn.activity_id,
                                 member_id: member.member.member_id,
-                              
+
                               })
                               .then((res) => alert(res.data.message))
                               .catch((err) => console.error(err));
@@ -191,7 +191,7 @@ function Member({ id = "" }) {
 
                         {/* call data subactivity */}
                         {checkIn.sub_activities &&
-                        checkIn.sub_activities.length > 0 ? (
+                          checkIn.sub_activities.length > 0 ? (
                           <div className="text-yellow-500">
                             <p>กิจกรรมย่อย:</p>
                             <ul className="list-disc pl-5">
@@ -246,11 +246,10 @@ function Member({ id = "" }) {
                             onClick={() => handleCheckIn(checkIn.activity_id)}
                             disabled={checkIn.is_checkin === 1}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center
-                                ${
-                                  checkIn.is_checkin === 1
-                                    ? "bg-gray-200 cursor-not-allowed"
-                                    : "bg-amber-500 hover:bg-amber-600 text-white"
-                                }`}
+                                ${checkIn.is_checkin === 1
+                                ? "bg-gray-200 cursor-not-allowed"
+                                : "bg-amber-500 hover:bg-amber-600 text-white"
+                              }`}
                           >
                             {checkIn.is_checkin === 1
                               ? "เช็คอินแล้ว"
