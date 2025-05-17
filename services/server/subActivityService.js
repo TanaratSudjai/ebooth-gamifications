@@ -101,6 +101,7 @@ export const createSubActivity = async (data) => {
   }
 };
 
+
 export const getSubActivityById = async (id) => {
   try {
     const [rows] = await db.query(
