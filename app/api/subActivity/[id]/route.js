@@ -4,6 +4,8 @@ import {
   updateSubActivity,
 } from "@/services/server/subActivityService";
 import { NextResponse } from "next/server";
+import { deleteFromR2 } from "@/utils/r2Delete";
+import db from "@/services/server/db";
 
 export async function GET(req, { params }) {
   try {
@@ -18,6 +20,16 @@ export async function GET(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     const { id } = params;
+    const subActivity = await getSubActivityById(id);
+
+    const logoUrl = subActivity.qr_image_url;
+    
+    const r2Key = logoUrl?.split(process.env.R2_PUBLIC_URL + "/")[1];
+    
+    if (r2Key) {
+      await deleteFromR2(r2Key);
+    }
+
     await deleteSubActivity(id);
     return NextResponse.json(
       { message: "SubActivity deleted successfully" },
