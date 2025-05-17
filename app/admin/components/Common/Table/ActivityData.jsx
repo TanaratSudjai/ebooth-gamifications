@@ -263,7 +263,7 @@ function ActivityData() {
                 </td>
 
                 {/* จำนวนกิจกรรมย่อย */}
-                <td className="table-cell-style text-center">
+                <td className="table-cell-style text-left">
                   {activity.sub_activity_count || (
                     <button
                       className="action-button-add"
@@ -279,7 +279,7 @@ function ActivityData() {
 
                 {/* Action Buttons */}
                 <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex flex-col md:flex-row justify-center items-center gap-2">
+                  <div className="flex flex-col md:flex-row justify-start items-center gap-2">
                     {/* Edit */}
                     <button
                       className="action-button"
