@@ -75,7 +75,7 @@ function PersonnelData({ search = "" }) {
   };
 
   return (
-    <div className="overflow-x-auto md:overflow-hidden  border mt-10 border-base-content/5 ">
+    <div className="overflow-x-auto lg:overflow-hidden  border mt-10 border-base-content/5 ">
       <table className="table border border-base-content/5 px-3">
         <thead>
           <tr className="text-center bg-gray-200 text-gray-800 text-xs md:text-sm">

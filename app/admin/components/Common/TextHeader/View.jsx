@@ -1,7 +1,7 @@
 import React from "react";
 import ButtonBack from "@/app/admin/components/Common/BottonBack";
 
-function View({ text, dis }) {
+function View({ text, dis, data }) {
   return (
     <div className="flex items-center justify-start gap-5">
       {!dis && (
@@ -13,6 +13,11 @@ function View({ text, dis }) {
         />
       )}
       <div className="text-2xl  text-gray-800 ">{text}</div>
+      {data && (
+        <div className="text-xl text-gray-800 ">
+          {`( ${data} )`}
+        </div>
+      )}
     </div>
   );
 }

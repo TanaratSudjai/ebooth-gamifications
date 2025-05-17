@@ -63,7 +63,7 @@ function Organize({ id = "" }) {
 
   return (
     <div className="w-full mx-auto p-4">
-      <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Organize details card - Left side */}
         <div className="md:col-span-1">
           <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
@@ -85,11 +85,8 @@ function Organize({ id = "" }) {
                     className="mr-2 text-amber-500 flex-shrink-0 mt-1"
                     size={18}
                   />
-                  <div>
-                    <span className="font-medium text-gray-700">ที่อยู่:</span>
-                    <p className="text-gray-600">
-                      {organize.organize.organize_address || "-"}
-                    </p>
+                  <div className="">
+                    <span className="font-medium text-gray-700">ที่อยู่: {organize.organize.organize_address || "-"}</span>
                   </div>
                 </div>
 
@@ -100,11 +97,8 @@ function Organize({ id = "" }) {
                   />
                   <div>
                     <span className="font-medium text-gray-700">
-                      รายละเอียด:
+                      รายละเอียด:  {organize.organize.organize_description || "-"}
                     </span>
-                    <p className="text-gray-600">
-                      {organize.organize.organize_description || "-"}
-                    </p>
                   </div>
                 </div>
 
@@ -138,7 +132,10 @@ function Organize({ id = "" }) {
                   {activity.map((activity, index) => (
                     <div
                       key={index}
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                      onClick={() => {
+                        router.push(`/admin/organize/list_member/${activity.activity_id}`);
+                      }}
+                      className="   bg-white border-none border-gray-20 cursor-pointer rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                     >
                       <div className="bg-amber-100 px-4 py-3 rounded-t-lg">
                         <h4
