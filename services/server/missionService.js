@@ -77,7 +77,7 @@ export const getMissionsById = async (params) => {
     params,
   ]);
   return {
-    data : rows,
+    data: rows,
   };
 };
 
