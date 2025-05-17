@@ -161,6 +161,22 @@ function Member({ id = "" }) {
                         <h4 className="font-bold text-gray-800">
                           {checkIn.activity_name}
                         </h4>
+                        <button
+                          className="bg-red-500 text-white px-4 py-2 rounded-md"
+                          onClick={() => {
+                            axios
+                              .post(`/api/checkin/undoActivity`, {
+                                activity_id: checkIn.activity_id,
+                                member_id: member.member.member_id,
+                              
+                              })
+                              .then((res) => alert(res.data.message))
+                              .catch((err) => console.error(err));
+                          }}
+                        >
+                          ยกเลิกกิจกรรมทั้งหมด
+                        </button>
+
                         <div className="flex items-center text-gray-700 text-sm mt-1">
                           <span className="bg-amber-200 text-amber-800 text-xs font-medium px-2 py-0.5 rounded ">
                             {checkIn.activity_max} ที่นั่ง
@@ -189,6 +205,24 @@ function Member({ id = "" }) {
                                     ).toLocaleString()}
                                     )
                                   </span>
+                                  <button
+                                    className="bg-red-400 text-white p-2 rounded-md"
+                                    onClick={() => {
+                                      axios
+                                        .post(`/api/checkin/undoSubactivity`, {
+                                          sub_activity_id: sub.sub_activity_id,
+                                          member_id: member.member.member_id,
+                                        })
+                                        .then((res) =>
+                                          alert("Undo successful!")
+                                        )
+                                        .catch((err) =>
+                                          console.error("Undo failed", err)
+                                        );
+                                    }}
+                                  >
+                                    ยกเลิกกิจกรรมย่อย
+                                  </button>
                                 </li>
                               ))}
                             </ul>
