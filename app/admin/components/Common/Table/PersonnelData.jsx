@@ -10,7 +10,8 @@ import { MdArrowBackIos } from "react-icons/md";
 import { MdNoteAdd, MdDeleteSweep } from "react-icons/md";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { RiFileEditFill } from "react-icons/ri";
-function PersonnelData() {
+
+function PersonnelData({ search = "" }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,13 +19,18 @@ function PersonnelData() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const { showSuccess, showError } = useAlert();
+  const [searchQuery, setSearchQuery] = useState(search);
+
+  const [filteredData, setFilteredData] = useState([]);
+
   async function fetchData() {
     try {
       const response = await axios.get(
         `/api/personnel?page=${page}&limit=${limit}`
       );
       setData(response.data.data);
-      setTotalPages(response.data.totalPages);
+      setFilteredData(response.data.data);
+      setTotalPages(response.data.pagination.totalPages);
       setLoading(true);
     } catch (error) {
       setError(error);
@@ -32,8 +38,17 @@ function PersonnelData() {
     }
   }
   useEffect(() => {
+    setSearchQuery(search);
     fetchData();
   }, [page, limit]);
+
+  useEffect(() => {
+    const filtered = data.filter((item) =>
+      item.personnel_name.toLowerCase().includes(search.toLowerCase())
+    );
+    setFilteredData(filtered);
+    setPage(1);
+  }, [search, data]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -78,7 +93,7 @@ function PersonnelData() {
 
         <tbody>
           {loading ? (
-            data.map((personnel, index) => (
+            filteredData.map((personnel, index) => (
               <tr
                 key={personnel.personnel_id}
                 className="text-center hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
@@ -102,7 +117,7 @@ function PersonnelData() {
                 </td>
 
                 <td className="text-black font-normal">
-                  {personnel.organize_name}
+                  {personnel.organize_name || "ไม่ระบุ"}
                 </td>
 
                 {/* ปุ่ม Edit / Delete */}
@@ -136,7 +151,7 @@ function PersonnelData() {
           )}
         </tbody>
       </table>
-      
+
       <div className="pagination container mx-auto px-10 flex justify-center gap-5 items-center mt-4">
         <button
           className="action-button text-center cursor-pointer"
@@ -145,7 +160,10 @@ function PersonnelData() {
         >
           <MdArrowBackIos />
         </button>
-        <span className="text-black font-bold"> หน้า {page}</span>
+        <span className="text-black font-bold">
+          {" "}
+          หน้า {page} / {totalPages || 1}
+        </span>
         <button
           className="action-button text-center cursor-pointer"
           onClick={() => handlePageChange(page + 1)}

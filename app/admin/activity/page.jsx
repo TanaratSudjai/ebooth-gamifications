@@ -7,6 +7,7 @@ import BottonQuery from "../components/Common/BottonQuery";
 import { MdNoteAdd } from "react-icons/md";
 
 function Page() {
+
   return (
     <div className="p-4">
       {/* Header section */}
@@ -28,19 +29,14 @@ function Page() {
             color="bg-gray-300"
             params="status off"
           />
-          <BottonQuery
-            text="จบเเล้ว"
-            color="bg-pink-300"
-            params="status end"
-          />
+          <BottonQuery text="จบเเล้ว" color="bg-pink-300" params="status end" />
           <BottonQuery
             text="กิจกรรมกำลังเริ่มช่วงกิจกรรม"
             color="bg-amber-300"
             params="status processing"
           />
           <div className="flex items-center text-gray-600 font-medium">
-            <MdNoteAdd className="mr-1" />
-            ( ปุ่มเพิ่มกิจกรรมย่อย )
+            <MdNoteAdd className="mr-1" />( ปุ่มเพิ่มกิจกรรมย่อย )
           </div>
         </div>
       </div>

@@ -42,6 +42,52 @@ export const getPaginatedData = async (tableName, page = 1, limit = 10) => {
         totalItems: count,
         totalPages,
       };
+    } else if (tableName === "member_rank") {
+      const [rows] = await db.query(
+        `SELECT 
+          mr.member_rank_id,
+          mr.member_rank_name,
+          mr.member_rank_logo,
+          mr.member_rank_base,
+          COUNT(m.member_id) AS member_count
+        FROM 
+          member_rank AS mr
+        LEFT JOIN 
+          member AS m 
+        ON 
+          mr.member_rank_id = m.member_rank_id
+        GROUP BY 
+          mr.member_rank_id, mr.member_rank_name
+        LIMIT ? OFFSET ?;`,
+        [limit, offset]
+      );
+
+      const [[{ count }]] = await db.query(
+        `SELECT COUNT(*) AS count FROM \`${tableName}\``
+      );
+      const totalPages = Math.ceil(count / limit);
+
+      return {
+        data: rows,
+        totalItems: count,
+        totalPages,
+      };
+    } else if (tableName === "activity") {
+      const [rows] = await db.query(
+        `SELECT * FROM \`${tableName}\` LIMIT ? OFFSET ?`,
+        [limit, offset]
+      );
+      const [[{ count }]] = await db.query(
+        `SELECT COUNT(*) AS count FROM \`${tableName}\``
+      );
+
+      const totalPages = Math.ceil(count / limit);
+
+      return {
+        data: rows,
+        totalItems: count,
+        totalPages,
+      };
     } else {
       const [rows] = await db.query(
         `SELECT * FROM \`${tableName}\` LIMIT ? OFFSET ?`,
@@ -83,8 +129,6 @@ export const getPaginatedDataSubByActivity = async (
       `SELECT * FROM \`${tableName}\` WHERE activity_id = ? LIMIT ? OFFSET ?`,
       [id, limit, offset]
     );
-
-   
 
     const [[{ count }]] = await db.query(
       `SELECT COUNT(*) AS count FROM \`${tableName}\``

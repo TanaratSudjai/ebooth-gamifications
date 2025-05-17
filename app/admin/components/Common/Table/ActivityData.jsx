@@ -81,7 +81,6 @@ function ActivityData() {
     }
   };
 
-
   // /api/subActivity POST
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,6 +128,18 @@ function ActivityData() {
   useEffect(() => {
     fetchData();
     fecthMission();
+    const shouldOpenModal = sessionStorage.getItem("openModal") === "true";
+    const selectedId = sessionStorage.getItem("selectedId");
+
+    if (shouldOpenModal && selectedId) {
+      // เปิด modal ด้วย selectedId
+      setSelectedId(selectedId);
+      document.getElementById("my_modal_1").showModal();
+    }
+
+    // เคลียร์ค่าหลังใช้งาน
+    sessionStorage.removeItem("openModal");
+    sessionStorage.removeItem("selectedId");
   }, [page, limit]);
 
   const handlePageChange = (newPage) => {
@@ -170,7 +181,7 @@ function ActivityData() {
 
       <table className="table-auto w-full border border-base-content/5 px-3">
         <thead>
-          <tr className="text-center bg-gray-200 text-gray-800 text-xs md:text-sm">
+          <tr className="text-left bg-gray-200 text-gray-800 text-xs md:text-sm">
             <th className="px-2 py-2 whitespace-nowrap">ลำดับ</th>
             <th className="px-2 py-2 whitespace-nowrap">วันเริ่มกิจกรรม</th>
             <th className="px-2 py-2 whitespace-nowrap">ชื่อกิจกรรม</th>
@@ -194,7 +205,7 @@ function ActivityData() {
             activityData.map((activity, index) => (
               <tr
                 key={activity.activity_id}
-                className="text-center hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
+                className="text-left hover:bg-gray-100 cursor-pointer border-b border-gray-200 transition-all duration-300 hover:scale-[1.01]"
                 onClick={() => toSubActivity(activity.activity_id)}
               >
                 {/* หมายเลขลำดับ */}
@@ -225,7 +236,7 @@ function ActivityData() {
                 </td> */}
 
                 {/* จำกัดจำนวน */}
-                <td className="table-cell-style hidden md:block">
+                <td className="table-cell-style md:table-cell hidden ">
                   {activity.activity_max > 999
                     ? "ไม่จำกัดผู้เข้าร่วม"
                     : `${activity.activity_max} คน`}
@@ -252,7 +263,7 @@ function ActivityData() {
                 </td>
 
                 {/* จำนวนกิจกรรมย่อย */}
-                <td className="table-cell-style ">
+                <td className="table-cell-style text-center">
                   {activity.sub_activity_count || (
                     <button
                       className="action-button-add"
@@ -286,7 +297,7 @@ function ActivityData() {
                     </button>
 
                     {!activity.sub_activity_count ||
-                      activity.sub_activity_count === 0 ? (
+                    activity.sub_activity_count === 0 ? (
                       <div className=""></div>
                     ) : (
                       <button
@@ -331,7 +342,6 @@ function ActivityData() {
           <GrNext />
         </button>
       </div>
-
 
       {/* dialog form */}
       <dialog id="my_modal_1" className="modal">
@@ -421,14 +431,17 @@ function ActivityData() {
               <label className="text-left">เลือกเกมส์ในกิจกรรม</label>
               <div className="flex gap-2 flex-wrap">
                 {mission.map((missionItem) => {
-                  const isChecked = formData.mission_ids.includes(missionItem.mission_id);
+                  const isChecked = formData.mission_ids.includes(
+                    missionItem.mission_id
+                  );
                   return (
                     <label
                       key={missionItem.mission_id}
-                      className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isChecked
-                        ? "bg-yellow-100 border-yellow-500 shadow-md"
-                        : "bg-white border-gray-200"
-                        }`}
+                      className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+                        isChecked
+                          ? "bg-yellow-100 border-yellow-500 shadow-md"
+                          : "bg-white border-gray-200"
+                      }`}
                     >
                       <input
                         type="checkbox"
@@ -444,7 +457,6 @@ function ActivityData() {
                 })}
               </div>
             </div>
-
 
             <div className="flex gap-2 w-full max-w-full">
               <label className="w-full max-w-full">
@@ -487,14 +499,19 @@ function ActivityData() {
               </label>
             </div>
 
-            <button className="btn bg-black text-white w-full mt-2" type="submit">
+            <button
+              className="btn bg-black text-white w-full mt-2"
+              type="submit"
+            >
               เพิ่ม
             </button>
           </form>
 
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn bg-red-500 text-white border-none">ยกเลิก</button>
+              <button className="btn bg-red-500 text-white border-none">
+                ยกเลิก
+              </button>
             </form>
           </div>
         </div>
