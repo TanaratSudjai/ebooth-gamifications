@@ -65,7 +65,7 @@ function MemberOfActivity({ id_main = 0 }) {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{person.member_address}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{person.member_username}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {person.checkin_status === 0 ? (
+                                    {person.is_checkin === 0 ? (
                                         <button
                                             onClick={() => onClickCheckIn(person.member_id)}
                                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

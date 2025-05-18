@@ -19,9 +19,8 @@ function page() {
     member_rank_name: "",
     member_rank_base: "" || 0,
     member_rank_logo: "",
-    preview: null
+    preview: null,
   });
-
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -31,7 +30,7 @@ function page() {
         member_rank_logo: file,
         preview: URL.createObjectURL(file),
       });
-    };
+    }
   };
 
   const handleChange = (e) => {
@@ -85,9 +84,12 @@ function page() {
     try {
       const response = await axios.get(`/api/memberRank/${id}`);
       setRank(response.data.data);
-      console.log("logo is " + response.data.data.member_rank_logo);
-      setFormData(response.data.data);
-      formData.member_rank_logo = response.data.data.member_rank_logo;
+      setFormData({
+        member_rank_name: response.data.data.member_rank_name,
+        member_rank_base: response.data.data.member_rank_base,
+        member_rank_logo: response.data.data.member_rank_logo,
+        preview: response.data.data.member_rank_logo,
+      });
     } catch (error) {
       console.error(error);
     }
