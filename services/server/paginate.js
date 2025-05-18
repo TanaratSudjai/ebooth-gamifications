@@ -113,36 +113,62 @@ export const getPaginatedData = async (tableName, page = 1, limit = 10) => {
 
 export const getPaginatedDataSubByActivity = async (
   tableName,
-  id,
+  activityId,
   page = 1,
   limit = 10
 ) => {
   try {
     const offset = (page - 1) * limit;
 
-    // ตรวจสอบความปลอดภัยเบื้องต้นของ table name
+    // Sanitize table name
     if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
       throw new Error("Invalid table name");
     }
 
-    let [rows] = await db.query(
-      `SELECT * FROM \`${tableName}\` WHERE activity_id = ? LIMIT ? OFFSET ?`,
-      [id, limit, offset]
+    // Get total count of sub-activities
+    const [[{ count }]] = await db.query(
+      `SELECT COUNT(*) AS count FROM \`${tableName}\` WHERE activity_id = ?`,
+      [activityId]
     );
 
-    const [[{ count }]] = await db.query(
-      `SELECT COUNT(*) AS count FROM \`${tableName}\``
+    // Get paginated sub-activities
+    const [subActivities] = await db.query(
+      `SELECT * FROM \`${tableName}\` WHERE activity_id = ? LIMIT ? OFFSET ?`,
+      [activityId, limit, offset]
+    );
+
+    // For each sub-activity, count the number of distinct members who checked in
+    const subActivityWithMemberCounts = await Promise.all(
+      subActivities.map(async (sub) => {
+        const [[{ memberCount }]] = await db.query(
+          `
+          SELECT COUNT(DISTINCT member.member_id) AS memberCount
+          FROM checkin
+          LEFT JOIN member ON checkin.member_id = member.member_id
+          WHERE sub_activity_id = ?
+          `,
+          [sub.sub_activity_id]
+        );
+
+        return {
+          ...sub,
+          memberCount,
+        };
+      })
     );
 
     const totalPages = Math.ceil(count / limit);
 
     return {
-      data: rows,
+      data: subActivityWithMemberCounts,
       totalItems: count,
       totalPages,
+      page,
+      limit,
     };
   } catch (error) {
-    console.error("Error fetching paginated data:", error); // Log the error for debugging
-    throw new Error("Failed to fetch paginated data"); // Throw a generic error message
+    console.error("Error fetching paginated data:", error);
+    throw new Error("Failed to fetch paginated data");
   }
 };
+
