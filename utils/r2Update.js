@@ -1,4 +1,6 @@
-import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import fs from "fs/promises";
+import mime from "mime-types";
 
 const s3 = new S3Client({
   region: "auto",
@@ -9,16 +11,18 @@ const s3 = new S3Client({
   },
 });
 
-export async function updateToR2(key) {
-  const command = new DeleteObjectCommand({
+export async function uploadToR2(filePath, key) {
+  const fileBuffer = await fs.readFile(filePath);
+
+  const command = new PutObjectCommand({
     Bucket: process.env.R2_BUCKET,
     Key: key,
+    Body: fileBuffer,
+    ContentType: mime.lookup(filePath) || "application/octet-stream",
+    ContentLength: fileBuffer.length,
   });
 
-  try {
-    await s3.send(command);
-    console.log("✅ Deleted from R2:", key);
-  } catch (err) {
-    console.error("❌ Error deleting from R2:", err);
-  }
+  await s3.send(command);
+
+  return `${process.env.R2_PUBLIC_URL}/${key}`;
 }
