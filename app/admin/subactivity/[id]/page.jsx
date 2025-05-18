@@ -128,9 +128,9 @@ function page() {
     }
   };
 
-  const listMember = async (id) => {
+  const listMember = async (id, bool) => {
     console.log("listMember", id);
-    router.push(`/admin/subactivity/list_account/${id}`);
+    router.push(`/admin/subactivity/list_account/${id}?bool=${bool}`);
   };
 
   const isBackAndopenModal = (id) => {
@@ -198,7 +198,7 @@ function page() {
                 <span>{activity.total_participants || 0} คน </span>
                 <button
                   onClick={() => {
-                    listMember(activity.activity_id);
+                    listMember(activity.activity_id, true);
                   }}
                   className="bg-gray-200 px-1 hover:bg-gray-400 hover:text-white hover:cursor-pointer transform transition duration-300 hover:scale-105 rounded-md"
                 >
@@ -240,10 +240,10 @@ function page() {
                       <span className="font-semibold">
                         จํานวนผู้เข้าร่วมกิจกรรม:
                       </span>{" "}
-                      <span>{activity.memberCount || 0} คน </span>
+                      <span>{sub.memberCount || 0} คน </span>
                       <button
                         onClick={() => {
-                          listMember(sub.sub_activity_id);
+                          listMember(sub.sub_activity_id, false);
                         }}
                         className="bg-gray-200 px-1 hover:bg-gray-400 hover:text-white hover:cursor-pointer transform transition duration-300 hover:scale-105 rounded-md"
                       >
