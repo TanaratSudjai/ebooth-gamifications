@@ -176,7 +176,7 @@ function ActivityData() {
   };
 
   return (
-    <div className="overflow-x-auto md:overflow-hidden   border mt-10  border-base-content/5">
+    <div className="overflow-x-auto lg:overflow-hidden border mt-10  border-base-content/5">
       {/* table */}
 
       <table className="table-auto w-full border border-base-content/5 px-3">
