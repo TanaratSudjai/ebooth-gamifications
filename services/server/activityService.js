@@ -114,7 +114,7 @@ export const getActivityById = async (id) => {
       WHERE
           activity.activity_id = ?
       GROUP BY
-          activity.activity_id, activity.activity_name;
+          checkin.member_id, activity.activity_id, activity.activity_name;
       `,
       [id]
     );
