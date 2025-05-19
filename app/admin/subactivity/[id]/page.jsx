@@ -70,7 +70,7 @@ function page() {
     try {
       const res_main = await axios.get(`/api/activity/${id}`);
       setActivity(res_main.data);
-      console.log("res_main : ", res_main.data);
+      // console.log("res_main : ", res_main.data);
       
       // console.log("res_main : ", res_main.data);
 
@@ -130,7 +130,7 @@ function page() {
   };
 
   const listMember = async (id, bool, name) => {
-    console.log("listMember", id);
+    // console.log("listMember", id);
     router.push(
       `/admin/subactivity/list_account/${id}?bool=${bool}&name=${name}`
     );

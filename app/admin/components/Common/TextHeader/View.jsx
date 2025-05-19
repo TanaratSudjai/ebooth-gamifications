@@ -12,11 +12,11 @@ function View({ text, dis, data }) {
           dis={dis}
         />
       )}
-      <div className="text-2xl  text-gray-800 ">{text}</div>
+      <div className="text-md md:text-xl lg:text-2xl  text-gray-800 ">
+        {text}
+      </div>
       {data && (
-        <div className="text-xl text-gray-800 ">
-          {`( ${data} )`}
-        </div>
+        <div className="text-md md:text-xl lg:text-2xl  text-gray-800 ">{` ${data} `}</div>
       )}
     </div>
   );
