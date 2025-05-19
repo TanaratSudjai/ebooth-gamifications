@@ -200,6 +200,16 @@ function Organize({ id = "" }) {
                       </div>
                     </div>
                   ))}
+                  <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                    <Calendar size={48} className="text-gray-300 mb-2" />
+                    <p className="font-medium">ไม่มีกิจกรรมที่ต้องจัดการ</p>
+                    <button
+                      className="btn bg-amber-300 hover:bg-amber-400 hover:scale-102 border-none rounded-md transform transition duration-200 ease-in-out text-black mt-4"
+                      onClick={() => henddleToaddActivity(id)}
+                    >
+                      เพิ่มกิจกรรม
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-gray-500">

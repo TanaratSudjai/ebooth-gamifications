@@ -9,7 +9,7 @@ function page() {
   const router = useRouter();
   const id = Number(params.id)
   const [submit, setSubmit] = useState(false);
-  const { showSuccess, showError } = useAlert();
+  const { showSuccess, showError, showWarning } = useAlert();
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     member_username: "",
@@ -32,13 +32,13 @@ function page() {
     try {
       let response;
       if (id == 0) {
-        console.log(formData);
+        // console.log(formData);
         response = await axios.post("/api/user/profile", formData);
-        if (response.status === 201) {
+        if (response.status === "success") {
           showSuccess("ทำรายการสำเร็จ", "สร้างสมาชิกสําเร็จ");
           router.push("/admin/member");
-        } else {
-          showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+        } else if (response.data.status === 409) {
+          showWarning("เกิดข้อผิดพลาด", "ชื่อสมาชิกหรืออีเมลนี้มีอยู่แล้ว");
         }
         clearForm();
       } else {
@@ -52,14 +52,14 @@ function page() {
         }
       }
     } catch (err) {
-      console.error("Error fetching activity data:", err);
+      showError("เกิดข้อผิดพลาด", "ชื่อสมาชิกหรืออีเมลนี้มีอยู่แล้ว");
     }
   };
 
   const fetchData = async () => {
     try {
       const response = await axios.get(`/api/user/profile/${id}`);
-    
+
 
       if (response.status === 200) {
         setFormData(response.data);
