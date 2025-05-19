@@ -208,61 +208,110 @@ export const getPersonnelData = async (page = 1, limit = 10) => {
   }
 };
 
-export const getMemberByActivityId = async (activity_id) => {
+export const getMemberByActivityId = async (activity_id, { page = 1, limit = 10 }) => {
   try {
+    const offset = (page - 1) * limit;
+
+    // Get the activity
     const [activityRows] = await db.query(
       "SELECT * FROM activity WHERE activity_id = ?",
       [activity_id]
     );
 
-    const [rows] = await db.query(
+    // Count total members (for pagination)
+    const [[{ total }]] = await db.query(
       `
-      SELECT member.*,MAX(checkin.is_checkin) AS is_checkin from checkin left join member on checkin.member_id = member.member_id 
-      WHERE activity_id = ? group by member.member_id
+      SELECT COUNT(DISTINCT member.member_id) AS total
+      FROM checkin
+      LEFT JOIN member ON checkin.member_id = member.member_id
+      WHERE activity_id = ?
       `,
       [activity_id]
+    );
+
+    // Fetch paginated members
+    const [rows] = await db.query(
+      `
+      SELECT member.*, MAX(checkin.is_checkin) AS is_checkin, member_rank.member_rank_logo
+      FROM checkin
+      LEFT JOIN member ON checkin.member_id = member.member_id 
+      LEFT JOIN member_rank ON member.member_rank_id = member_rank.member_rank_id
+      WHERE activity_id = ?
+      GROUP BY member.member_id
+      LIMIT ? OFFSET ?
+      `,
+      [activity_id, limit, offset]
     );
 
     return {
       data: {
         activity: activityRows[0],
-        memberCount: rows.length,
+        memberCount: total,
         members: rows,
-      }
-
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
     };
   } catch (error) {
     console.error("Error fetching members by activity ID:", error);
     throw new Error("Failed to fetch members by activity ID");
   }
-}
+};
 
-export const getMemberBySubActivityId = async (subActivity_id) => {
+
+export const getMemberBySubActivityId = async (subActivity_id, { page = 1, limit = 10 }) => {
+  const offset = (page - 1) * limit;
+
   try {
-
+    // Fetch sub-activity info
     const [[subActivityRows]] = await db.query(
       "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
       [subActivity_id]
     );
 
-    const [rows] = await db.query(
+    // Count total members (for pagination metadata)
+    const [[{ total }]] = await db.query(
       `
-      SELECT member.*,MAX(checkin.is_checkin) AS is_checkin from checkin left join member on checkin.member_id = member.member_id
-      WHERE sub_activity_id = ? group by member.member_id
+      SELECT COUNT(DISTINCT member.member_id) AS total
+      FROM checkin
+      LEFT JOIN member ON checkin.member_id = member.member_id
+      WHERE sub_activity_id = ?
       `,
       [subActivity_id]
+    );
+
+    // Get paginated members
+    const [rows] = await db.query(
+      `
+      SELECT member.*, MAX(checkin.is_checkin) AS is_checkin
+      FROM checkin
+      LEFT JOIN member ON checkin.member_id = member.member_id
+      WHERE sub_activity_id = ?
+      GROUP BY member.member_id
+      LIMIT ? OFFSET ?
+      `,
+      [subActivity_id, limit, offset]
     );
 
     return {
       data: {
         subActivity: subActivityRows,
-        memberCount: rows.length,
+        memberCount: total,
         members: rows,
-
-      }
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
     };
   } catch (error) {
     console.error("Error fetching members by sub activity ID:", error);
     throw new Error("Failed to fetch members by sub activity ID");
   }
-}
+};

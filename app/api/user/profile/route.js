@@ -41,19 +41,29 @@ export async function POST(req) {
     const body = await req.json();
     const newProfile = await createProfile(body);
 
-    const response = {
-      status: "success",
-      message: "Profile created successfully",
-      data: newProfile,
-    };
-
-    return NextResponse.json(response, { status: 201 });
+    if (newProfile.error) {
+      return NextResponse.json(
+        { status: 409 }
+      );
+    }
+    return NextResponse.json(
+      {
+        status: "success",
+        message: "Profile created successfully",
+        data: newProfile,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    const response = {
-      status: "error",
-      message: error.message || "Something went wrong",
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    if (err.code === "ER_DUP_ENTRY") {
+      return {
+        error: true,
+        message: "Username or email already exists",
+        statusCode: 409,
+      };
+    }
+    throw err;
+    console.log(error.message);
   }
 }
+

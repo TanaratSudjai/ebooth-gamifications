@@ -10,7 +10,7 @@ import ReadableStreamToNode from "@/utils/readable";
 import { IncomingForm } from "formidable";
 import db from "@/services/server/db";
 import { deleteFromR2 } from "@/utils/r2Delete";
-import { updateToR2 } from "@/utils/r2Update";
+import { uploadToR2 } from "@/utils/r2Update";
 
 export async function GET(request, { params }) {
   const { id } = params;
@@ -128,6 +128,7 @@ export async function PUT(request, { params }) {
         }
 
         oldImageUrl = rows[0].member_rank_logo;
+        console.log("Old image URL:", oldImageUrl);
 
         const file = files.member_rank_logo?.[0];
 
@@ -136,11 +137,12 @@ export async function PUT(request, { params }) {
           const r2Key = `member_ranks/${uniqueFileName}`;
 
           // Upload new image to R2
-          imageUrl = await updateToR2(file.filepath, r2Key);
+          imageUrl = await uploadToR2(file.filepath, r2Key);
+
 
           // Delete old image from R2
           if (oldImageUrl && oldImageUrl.includes("r2.dev")) {
-            const oldKey = oldImageUrl.split("/").slice(-2).join("/");
+            const oldKey = oldImageUrl.replace(/^https:\/\/[^/]+\/?/, "");
             await deleteFromR2(oldKey);
           }
         } else {

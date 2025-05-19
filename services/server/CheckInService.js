@@ -576,3 +576,97 @@ export const updateIsCheckInONSubActivity = async (data) => {
     throw new Error("Failed to update check-in status");
   }
 };
+
+export const undoSubactivityInCheckIn = async (data) => {
+  try{
+    const [row] = await db.query(
+      `SELECT sub_activity_id, activity_id FROM checkin WHERE sub_activity_id = ? AND member_id = ?`,
+      [data.sub_activity_id, data.member_id]
+    )
+
+    if(row.length === 0){
+      return {
+        message: "Check-in not found",
+        status: 404
+      }
+    }
+
+    const { sub_activity_id, activity_id } = row[0];
+
+    await db.query(
+      `UPDATE sub_activity SET sub_activity_max = sub_activity_max + 1 WHERE sub_activity_id = ?`,
+      [sub_activity_id]
+    );
+
+    await db.query(
+      `UPDATE activity SET activity_max = activity_max + 1 WHERE activity_id = ?`,
+      [activity_id]
+    );
+
+    await db.query(
+      `DELETE FROM checkin WHERE sub_activity_id = ? AND member_id = ?`,
+      [data.sub_activity_id, data.member_id]
+    );
+
+    return {
+      message: "Subactivity check-in undone successfully",
+      status: 200
+    }
+
+  } catch (error) {
+    console.error("Error undoing subactivity in check-in:", error);
+    throw new Error("Failed to undo subactivity in check-in");
+  }
+}
+
+export const undoActivityInCheckIn = async (data) => {
+  const { member_id, activity_id } = data;
+
+  console.log("member_id", member_id);
+  console.log("activity_id", activity_id);
+
+  try {
+    // 1. Find all matching sub_activity_ids for this member & activity
+    const [rows] = await db.query(
+      `SELECT sub_activity_id FROM checkin WHERE member_id = ? AND activity_id = ?`,
+      [member_id, activity_id]
+    );
+
+    if (rows.length === 0) {
+      return {
+        message: "No check-ins found for this activity",
+        status: 404
+      };
+    }
+
+    // 2. Loop and update sub_activity_max for each sub_activity
+    for (const row of rows) {
+      await db.query(
+        `UPDATE sub_activity SET sub_activity_max = sub_activity_max + 1 WHERE sub_activity_id = ?`,
+        [row.sub_activity_id]
+      );
+    }
+
+    // 3. Update activity_max (+ number of sub-activities undone)
+    await db.query(
+      `UPDATE activity SET activity_max = activity_max + ? WHERE activity_id = ?`,
+      [rows.length - 1, activity_id]
+    );
+
+    // 4. Delete all checkin entries for this member and activity
+    await db.query(
+      `DELETE FROM checkin WHERE member_id = ? AND activity_id = ?`,
+      [member_id, activity_id]
+    );
+
+    return {
+      message: "All subactivity check-ins for the activity undone successfully",
+      status: 200,
+      undone: rows.length
+    };
+
+  } catch (error) {
+    console.error("Error undoing all subactivities in check-in:", error);
+    throw new Error("Failed to undo all subactivities in check-in");
+  }
+};

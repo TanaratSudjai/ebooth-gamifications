@@ -55,7 +55,6 @@ function page() {
       const res_sub = await axios.get(
         `/api/subActivity/getSubByActivity/${id}`
       );
-      console.log("res_sub : ", res_sub.data.data.length);
       console.log("res_sub_data : ", res_sub.data.data);
 
       setSubActivity(res_sub.data.data);
@@ -71,7 +70,9 @@ function page() {
     try {
       const res_main = await axios.get(`/api/activity/${id}`);
       setActivity(res_main.data);
-      console.log("res_main : ", res_main.data);
+      // console.log("res_main : ", res_main.data);
+      
+      // console.log("res_main : ", res_main.data);
 
       // console.log("main data : ", res_main.data);
       // console.log("main data : ", res_main.data.organize_id);
@@ -104,7 +105,7 @@ function page() {
         `/api/subActivity/${selectedIdSub}`,
         payloadSubactivity
       );
-      console.log(res);
+      // console.log(res);
       if (res.status === 200) {
         showSuccess("ทำรายการสำเร็จ", "ทำการอัพเดตมูลสําเร็จ");
         await document.getElementById("my_modal_1").close();
@@ -126,6 +127,13 @@ function page() {
     } catch (err) {
       showError("เกิดข้อผิดพลาด", "ไม่สามารถลบข้อมูลได้");
     }
+  };
+
+  const listMember = async (id, bool, name) => {
+    // console.log("listMember", id);
+    router.push(
+      `/admin/subactivity/list_account/${id}?bool=${bool}&name=${name}`
+    );
   };
 
   const isBackAndopenModal = (id) => {
@@ -164,7 +172,8 @@ function page() {
       <div className="flex flex-col justify-start md:flex-row gap-10 items-center mb-4">
         <CommonTextHeaderView text="จัดการกิจกรรมย่อย" />
       </div>
-      <div className="flex flex-col items-start md:flex-row gap-5 ">
+
+      <div className="flex flex-col items-start lg:flex-row gap-5 ">
         <div className="w-full h-[50%] border border-gray-200 rounded-xl p-4">
           <h2 className=" border border-gray-200 p-2 rounded-md mb-3 text-center font-bold">
             กิจกรรมหลัก
@@ -187,9 +196,21 @@ function page() {
                 <span className="font-semibold">ค่าใช้จ่าย:</span>{" "}
                 {activity.activity_price}
               </p>
-              <p className="mb-2">
-                <span className="font-semibold">จํานวนผู้เข้าร่วมกีจกรรม:</span>{" "}
-                {activity.total_participants || 0} คน
+              <p className="mb-2 flex gap-2">
+                <span className="font-semibold">จํานวนผู้เข้าร่วมกิจกรรม:</span>{" "}
+                <span>{activity.total_participants || 0} คน </span>
+                <button
+                  onClick={() => {
+                    listMember(
+                      activity.activity_id,
+                      true,
+                      activity.activity_name
+                    );
+                  }}
+                  className="bg-gray-200 px-1 hover:bg-gray-400 hover:text-white hover:cursor-pointer transform transition duration-300 hover:scale-105 rounded-md"
+                >
+                  รายชื่อ
+                </button>
               </p>
               <p>
                 <span className="font-semibold">กำหนดการกิจกรรม:</span>{" "}
@@ -207,6 +228,7 @@ function page() {
             </div>
           )}
         </div>
+
         <div className="grid w-full justify-center items-center grid-cols-1 gap-3">
           {/* <pre>{JSON.stringify(subActivity, null, 2)}</pre> */}
           {!loading ? (
@@ -221,6 +243,24 @@ function page() {
                       />
                     </div>
                     <p className="p-1">{sub.sub_activity_description}</p>
+                    <p className="mb-2 flex gap-2">
+                      <span className="font-semibold">
+                        จํานวนผู้เข้าร่วมกิจกรรม:
+                      </span>{" "}
+                      <span>{sub.memberCount || 0} คน </span>
+                      <button
+                        onClick={() => {
+                          listMember(
+                            sub.sub_activity_id,
+                            false,
+                            sub.sub_activity_name
+                          );
+                        }}
+                        className="bg-gray-200 px-1 hover:bg-gray-400 hover:text-white hover:cursor-pointer transform transition duration-300 hover:scale-105 rounded-md"
+                      >
+                        รายชื่อ
+                      </button>
+                    </p>
                     <div className="flex flex-col md:flex-row gap-2 break-all">
                       <div className="flex flex-col md:flex-col lg:flex-row text-sm gap-2 break-all">
                         <span>วันที่ {sub.sub_activity_start}</span>

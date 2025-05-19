@@ -19,7 +19,7 @@ function page() {
   const [mission, setMission] = useState([]);
   const [submit, setSubmit] = useState(false);
   const { showSuccess, showError } = useAlert();
-  const [ognId, setognId] = useState(null);
+  const [ognId, setognId] = useState(0);
 
   const [formData, setFormData] = useState({
     activity_name: "",
@@ -33,7 +33,6 @@ function page() {
     mission_ids: [],
   });
 
-  // use sweetalert2 for error and success message
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const parsedValue =
@@ -81,8 +80,8 @@ function page() {
             typeof data.mission_ids === "string"
               ? data.mission_ids.split(",").map((id) => Number(id))
               : Array.isArray(data.mission_ids)
-              ? data.mission_ids.map((id) => Number(id))
-              : [];
+                ? data.mission_ids.map((id) => Number(id))
+                : [];
 
           setFormData({
             ...data,
@@ -116,9 +115,9 @@ function page() {
         ...prev,
         organize_id: id_ogn,
       }));
-      sessionStorage.removeItem("activityId");
+      // sessionStorage.removeItem("activityId");
     }
-    // console.log(id_ogn);
+    console.log("cash ogn : ", ognId, " id_ogn : ", id_ogn);
   }, [activityId]);
 
   const handleSubmit = async (e) => {
@@ -144,14 +143,23 @@ function page() {
       console.log(activityData);
 
       if (activityId === 0) {
-        response = await axios.post("/api/activity", activityData);
+        const response = await axios.post("/api/activity", activityData);
         if (response.status === 201) {
           showSuccess("ทำรายการสำเร็จ", "สร้างกิจกรรมสําเร็จ");
-          router.push("/admin/activity");
+
+          // 🔍 ตรวจสอบ ognId ถ้ามี ให้ไป dashboard แทน
+          if (ognId) {
+            sessionStorage.removeItem("activityId");
+            router.push("/admin/organize/detail/" + ognId);
+          } else {
+            router.push("/admin/activity");
+          }
+
+          clearForm();
         } else {
           showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
         }
-        clearForm();
+
       } else {
         response = await axios.put(`/api/activity/${activityId}`, activityData);
         if (response.status === 200) {
@@ -343,11 +351,10 @@ function page() {
               return (
                 <label
                   key={missionItem.mission_id}
-                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${
-                    isChecked
-                      ? "bg-yellow-100 border-yellow-500 shadow-md"
-                      : "bg-white border-gray-200"
-                  }`}
+                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isChecked
+                    ? "bg-yellow-100 border-yellow-500 shadow-md"
+                    : "bg-white border-gray-200"
+                    }`}
                 >
                   <input
                     type="checkbox"

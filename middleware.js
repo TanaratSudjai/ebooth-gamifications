@@ -22,9 +22,9 @@ export async function middleware(req) {
   }
 
   // 🔒 Protect API
-  if (path.startsWith("/api") && !token) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  // if (path.startsWith("/api") && !token) {
+  //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  // }
 
   return NextResponse.next();
 }

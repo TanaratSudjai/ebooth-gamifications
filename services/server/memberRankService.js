@@ -99,18 +99,19 @@ export const updateMemberRank = async (id, data) => {
       member_rank_base: z
         .number()
         .int()
-        .positive("base must be a positive integer"),
+        .nonnegative("base must be a non-negative integer"),
       member_rank_logo: z
         .string()
         .refine(
           (val) =>
-            val === undefined ||
-            (val.startsWith("/uploads/") && val.endsWith(".png")),
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
           {
             message: "Invalid image file path",
           }
-        )
-        .optional(),
+        ),
     });
 
     const memberRankResult = memberRankSchema.safeParse(data);

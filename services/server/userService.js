@@ -57,6 +57,18 @@ export const createProfile = async (data) => {
     const { member_username, member_email, member_password, member_address } =
       parseResult.data;
 
+    const [existingUser] = await db.query(
+      "SELECT member_id FROM member WHERE member_username = ?",
+      [member_username]
+    );
+
+    if (existingUser.length > 0) {
+      return {
+        error: true,
+        message: "Username or email already exists",
+      };
+    }
+
     const hashedPassword = await bcrypt.hash(member_password, 10);
 
     const [result] = await db.query(
@@ -75,10 +87,16 @@ export const createProfile = async (data) => {
 
     return newProfileRows[0];
   } catch (error) {
-    console.error("❌ createProfile error:", error); // Log the error for debugging
-    throw new Error("Create profile failed: " + error.message); // Throw a generic error message
+    return NextResponse.json(
+      {
+        status: "error",
+        message: error.message || "Something went wrong",
+      },
+      { status: 500 }
+    );
   }
-};
+}
+
 
 // ลบโปรไฟล์
 export const deleteProfile = async (id) => {

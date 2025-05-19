@@ -19,18 +19,26 @@ function page() {
     member_rank_name: "",
     member_rank_base: "" || 0,
     member_rank_logo: "",
+    preview: null,
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    console.log(formData);
-  };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({ ...formData, member_rank_logo: file });
+      setFormData({
+        ...formData,
+        member_rank_logo: file,
+        preview: URL.createObjectURL(file),
+      });
     }
   };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  console.log(formData.member_rank_logo.name);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -76,9 +84,12 @@ function page() {
     try {
       const response = await axios.get(`/api/memberRank/${id}`);
       setRank(response.data.data);
-      console.log("logo is " + response.data.data.member_rank_logo);
-      setFormData(response.data.data);
-      formData.member_rank_logo = response.data.data.member_rank_logo;
+      setFormData({
+        member_rank_name: response.data.data.member_rank_name,
+        member_rank_base: response.data.data.member_rank_base,
+        member_rank_logo: response.data.data.member_rank_logo,
+        preview: response.data.data.member_rank_logo,
+      });
     } catch (error) {
       console.error(error);
     }
@@ -147,13 +158,11 @@ function page() {
           </div>
           <div className="">
             <label className="block mb-1">สัญลักษณ์</label>
-            {formData.member_rank_logo && (
-              <Image
-                src={formData.member_rank_logo}
+            {formData.preview && (
+              <img
+                src={formData.preview}
                 alt="preview"
                 className="w-32 h-32 object-cover mt-2 rounded"
-                width={100}
-                height={100}
               />
             )}
           </div>
