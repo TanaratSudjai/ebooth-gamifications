@@ -182,7 +182,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="p-8">
+      <div className="py-8 px-2">
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
