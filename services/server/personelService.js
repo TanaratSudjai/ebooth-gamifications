@@ -232,9 +232,10 @@ export const getMemberByActivityId = async (activity_id, { page = 1, limit = 10 
     // Fetch paginated members
     const [rows] = await db.query(
       `
-      SELECT member.*, MAX(checkin.is_checkin) AS is_checkin
+      SELECT member.*, MAX(checkin.is_checkin) AS is_checkin, member_rank.member_rank_logo
       FROM checkin
-      LEFT JOIN member ON checkin.member_id = member.member_id
+      LEFT JOIN member ON checkin.member_id = member.member_id 
+      LEFT JOIN member_rank ON member.member_rank_id = member_rank.member_rank_id
       WHERE activity_id = ?
       GROUP BY member.member_id
       LIMIT ? OFFSET ?

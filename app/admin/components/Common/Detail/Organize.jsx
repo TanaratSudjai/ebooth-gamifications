@@ -61,6 +61,17 @@ function Organize({ id = "" }) {
     );
   }
 
+  // router.push(
+  //   `/admin/subactivity/list_account/${id}?bool=${bool}&name=${name}`
+  // );
+  const henddleDashboardOrganize = (activity_id, organize_name) => {
+    if (id !== 0) {
+      router.push(
+        `/admin/organize/detail/${id}/dashboard?organize_name=${organize_name}&activity_id=${activity_id}`
+      );
+    }
+  };
+
   return (
     <div className="w-full mx-auto p-4">
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -86,7 +97,9 @@ function Organize({ id = "" }) {
                     size={18}
                   />
                   <div className="">
-                    <span className="font-medium text-gray-700">ที่อยู่: {organize.organize.organize_address || "-"}</span>
+                    <span className="font-medium text-gray-700">
+                      ที่อยู่: {organize.organize.organize_address || "-"}
+                    </span>
                   </div>
                 </div>
 
@@ -97,7 +110,8 @@ function Organize({ id = "" }) {
                   />
                   <div>
                     <span className="font-medium text-gray-700">
-                      รายละเอียด:  {organize.organize.organize_description || "-"}
+                      รายละเอียด:{" "}
+                      {organize.organize.organize_description || "-"}
                     </span>
                   </div>
                 </div>
@@ -133,7 +147,10 @@ function Organize({ id = "" }) {
                     <div
                       key={index}
                       onClick={() => {
-                        router.push(`/admin/organize/list_member/${activity.activity_id}`);
+                        henddleDashboardOrganize(
+                          activity.activity_id,
+                          organize.organize.organize_name
+                        );
                       }}
                       className="   bg-white border-none border-gray-20 cursor-pointer rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                     >

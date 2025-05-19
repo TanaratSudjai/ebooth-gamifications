@@ -55,7 +55,6 @@ function page() {
       const res_sub = await axios.get(
         `/api/subActivity/getSubByActivity/${id}`
       );
-      console.log("res_sub : ", res_sub.data.data.length);
       console.log("res_sub_data : ", res_sub.data.data);
 
       setSubActivity(res_sub.data.data);
@@ -71,7 +70,9 @@ function page() {
     try {
       const res_main = await axios.get(`/api/activity/${id}`);
       setActivity(res_main.data);
-      console.log("res_main : ", res_main.data);
+      // console.log("res_main : ", res_main.data);
+      
+      // console.log("res_main : ", res_main.data);
 
       // console.log("main data : ", res_main.data);
       // console.log("main data : ", res_main.data.organize_id);
@@ -104,7 +105,7 @@ function page() {
         `/api/subActivity/${selectedIdSub}`,
         payloadSubactivity
       );
-      console.log(res);
+      // console.log(res);
       if (res.status === 200) {
         showSuccess("ทำรายการสำเร็จ", "ทำการอัพเดตมูลสําเร็จ");
         await document.getElementById("my_modal_1").close();
@@ -128,9 +129,11 @@ function page() {
     }
   };
 
-  const listMember = async (id, bool) => {
-    console.log("listMember", id);
-    router.push(`/admin/subactivity/list_account/${id}?bool=${bool}`);
+  const listMember = async (id, bool, name) => {
+    // console.log("listMember", id);
+    router.push(
+      `/admin/subactivity/list_account/${id}?bool=${bool}&name=${name}`
+    );
   };
 
   const isBackAndopenModal = (id) => {
@@ -198,7 +201,11 @@ function page() {
                 <span>{activity.total_participants || 0} คน </span>
                 <button
                   onClick={() => {
-                    listMember(activity.activity_id, true);
+                    listMember(
+                      activity.activity_id,
+                      true,
+                      activity.activity_name
+                    );
                   }}
                   className="bg-gray-200 px-1 hover:bg-gray-400 hover:text-white hover:cursor-pointer transform transition duration-300 hover:scale-105 rounded-md"
                 >
@@ -243,7 +250,11 @@ function page() {
                       <span>{sub.memberCount || 0} คน </span>
                       <button
                         onClick={() => {
-                          listMember(sub.sub_activity_id, false);
+                          listMember(
+                            sub.sub_activity_id,
+                            false,
+                            sub.sub_activity_name
+                          );
                         }}
                         className="bg-gray-200 px-1 hover:bg-gray-400 hover:text-white hover:cursor-pointer transform transition duration-300 hover:scale-105 rounded-md"
                       >
