@@ -1,9 +1,12 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import "dayjs/locale/th";
 
+dayjs.locale("th");
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
 export function toDatetimeLocalString(dateStr) {
   if (!dateStr) return "";
 
@@ -50,4 +53,13 @@ export function formatDisplayDateTime(isoString) {
   };
 
   return dateBangkok.toLocaleString("th-TH", options); // ex: 17/05/2025, 16:00
+}
+
+export function formatDateToThaiBE(date) {
+  if (!date) return "";
+  const d = dayjs(date).locale("th");
+  const yearBE = d.year() + 543;
+  const monthNameTH = d.format("MMMM"); 
+  const day = d.format("DD");
+  return `${day} ${monthNameTH} ${yearBE}`;
 }

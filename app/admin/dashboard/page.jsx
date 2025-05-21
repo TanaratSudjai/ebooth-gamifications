@@ -38,7 +38,7 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
+import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
@@ -396,6 +396,7 @@ const Dashboard = () => {
                         <span className="text-xs text-gray-500">
                           {dayjs(activity.activity_date).format("DD/MM/YYYY") ||
                             ""}
+                          {/* {formatDateToThaiBE(activity.activity_date)} */}
                         </span>
                       </div>
                     </div>

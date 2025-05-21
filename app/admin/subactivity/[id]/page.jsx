@@ -12,7 +12,8 @@ import {
 } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import { formatDateToThaiBE } from "@/utils/formatdatelocal";
+import "../../../../utils/datepickerLocale";
 function page() {
   const router = useRouter();
   const params = useParams();
@@ -71,7 +72,7 @@ function page() {
       const res_main = await axios.get(`/api/activity/${id}`);
       setActivity(res_main.data);
       // console.log("res_main : ", res_main.data);
-      
+
       // console.log("res_main : ", res_main.data);
 
       // console.log("main data : ", res_main.data);
@@ -214,9 +215,8 @@ function page() {
               </p>
               <p>
                 <span className="font-semibold">กำหนดการกิจกรรม:</span>{" "}
-                {dayjs(activity.activity_start).format("DD/MM/YYYY")}
-                {` - `}
-                {dayjs(activity.activity_end).format("DD/MM/YYYY")}
+                {formatDateToThaiBE(activity.activity_start)} -{" "}
+                {formatDateToThaiBE(activity.activity_end)}
                 <br />
                 <span className="font-semibold">ระยะเวลา:</span>{" "}
                 {dayjs(activity.activity_end).diff(
@@ -263,9 +263,21 @@ function page() {
                     </p>
                     <div className="flex flex-col md:flex-row gap-2 break-all">
                       <div className="flex flex-col md:flex-col lg:flex-row text-sm gap-2 break-all">
-                        <span>วันที่ {sub.sub_activity_start}</span>
-                        <p className="text-red-500">จนถึง</p>
-                        <span>วันที่ {sub.sub_activity_end}</span>
+                        <p>
+                          <span className="font-semibold">
+                            กำหนดการกิจกรรม:
+                          </span>{" "}
+                          {formatDateToThaiBE(sub.sub_activity_start)} -{" "}
+                          {formatDateToThaiBE(sub.sub_activity_end)}
+                        </p>
+                        <p>
+                          <span className="font-semibold">ระยะเวลา:</span>{" "}
+                          {dayjs(sub.sub_activity_end).diff(
+                            dayjs(sub.sub_activity_start),
+                            "day"
+                          )}{" "}
+                          วัน
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-5">
@@ -380,9 +392,8 @@ function page() {
                     sub_activity_start: date,
                   }));
                 }}
-                timeInputLabel="Time:"
-                dateFormat="MM/dd/yyyy h:mm aa"
-                showTimeInput
+                dateFormat="dd/MM/yyyy HH:mm"
+                locale="th"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full"
                 required
                 placeholderText="กรูณาเลือกเวลา"
@@ -403,9 +414,8 @@ function page() {
                     sub_activity_end: date,
                   }));
                 }}
-                timeInputLabel="Time:"
-                dateFormat="MM/dd/yyyy h:mm aa"
-                showTimeInput
+                dateFormat="dd/MM/yyyy HH:mm"
+                locale="th"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full"
                 required
                 placeholderText="กรูณาเลือกเวลา"

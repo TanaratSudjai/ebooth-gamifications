@@ -13,7 +13,7 @@ import {
   Users,
   Clock,
 } from "lucide-react";
-
+import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 function Organize({ id = "" }) {
   const [organize, setOrganize] = useState([]);
   const [activity, setActivity] = useState([]);

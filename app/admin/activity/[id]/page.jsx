@@ -7,7 +7,7 @@ import { useAlert } from "@/contexts/AlertContext";
 import { toSQLDatetimeFormat } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import "../../../../utils/datepickerLocale";
 function page() {
   const params = useParams();
   const router = useRouter();
@@ -80,8 +80,8 @@ function page() {
             typeof data.mission_ids === "string"
               ? data.mission_ids.split(",").map((id) => Number(id))
               : Array.isArray(data.mission_ids)
-                ? data.mission_ids.map((id) => Number(id))
-                : [];
+              ? data.mission_ids.map((id) => Number(id))
+              : [];
 
           setFormData({
             ...data,
@@ -159,7 +159,6 @@ function page() {
         } else {
           showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
         }
-
       } else {
         response = await axios.put(`/api/activity/${activityId}`, activityData);
         if (response.status === 200) {
@@ -245,9 +244,10 @@ function page() {
                     activity_start: date,
                   }));
                 }}
-                timeInputLabel="Time:"
-                showTimeInput
-                dateFormat="MM/dd/yyyy h:mm aa"
+                // timeInputLabel="Time:"
+                // showTimeInput
+                dateFormat="dd/MM/yyyy HH:mm"
+                locale="th"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full "
                 required
                 wrapperClassName="w-full"
@@ -266,10 +266,11 @@ function page() {
                     activity_end: date,
                   }));
                 }}
-                timeInputLabel="Time:"
-                showTimeInput
+                // timeInputLabel="Time:"
+                // showTimeInput
                 wrapperClassName="w-full"
-                dateFormat="MM/dd/yyyy h:mm aa"
+                dateFormat="dd/MM/yyyy HH:mm"
+                locale="th"
                 className="text-black p-2 border border-gray-300 rounded-lg w-full"
                 required
                 placeholderText="กรูณาเลือกวันจบกิจกรรม"
@@ -351,10 +352,11 @@ function page() {
               return (
                 <label
                   key={missionItem.mission_id}
-                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isChecked
-                    ? "bg-yellow-100 border-yellow-500 shadow-md"
-                    : "bg-white border-gray-200"
-                    }`}
+                  className={`flex items-center p-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+                    isChecked
+                      ? "bg-yellow-100 border-yellow-500 shadow-md"
+                      : "bg-white border-gray-200"
+                  }`}
                 >
                   <input
                     type="checkbox"

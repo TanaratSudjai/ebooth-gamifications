@@ -15,6 +15,8 @@ import { MdArrowBackIos } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toSQLDatetimeFormat } from "@/utils/formatdatelocal";
+import "../../../../../utils/datepickerLocale";
+import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 function ActivityData() {
   const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -214,8 +216,8 @@ function ActivityData() {
                 </td>
 
                 {/* วันที่ */}
-                <td className="table-cell-style">
-                  {dayjs(activity.activity_start).format("DD/MM/YYYY HH:mm")}
+                <td className="table-cell-style text-nowrap">
+                  {formatDateToThaiBE(activity.activity_start)}
                   <br />
                   <span className="text-gray-500 text-xs">
                     ระยะเวลา:{" "}
@@ -395,9 +397,8 @@ function ActivityData() {
                       sub_activity_start: date,
                     }));
                   }}
-                  timeInputLabel="Time:"
-                  dateFormat="MM/dd/yyyy h:mm aa"
-                  showTimeInput
+                  dateFormat="dd/MM/yyyy HH:mm"
+                  locale="th"
                   className="text-black p-2 border border-gray-300 rounded-lg w-full"
                   required
                   placeholderText="กรูณาเลือกเวลา"
@@ -417,8 +418,8 @@ function ActivityData() {
                       sub_activity_end: date,
                     }));
                   }}
-                  timeInputLabel="Time:"
-                  dateFormat="MM/dd/yyyy h:mm aa"
+                  dateFormat="dd/MM/yyyy HH:mm"
+                  locale="th"
                   showTimeInput
                   className="text-black p-2 border border-gray-300 rounded-lg w-full"
                   required

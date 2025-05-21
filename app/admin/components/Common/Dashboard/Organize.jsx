@@ -4,6 +4,7 @@ import axios from "axios";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 function Organize({ organize_id, activity_id, organize_name }) {
   // state data
   const [organize, setOrganize] = useState([]);
@@ -93,7 +94,9 @@ function Organize({ organize_id, activity_id, organize_name }) {
     getActivity(activity_id);
     getSubactivity(activity_id);
     getMember(activity_id);
+  }, [organize_id, activity_id]);
 
+  useEffect(() => {
     if (!Array.isArray(member)) return;
 
     const filtered = member.filter((item) => {
@@ -102,7 +105,7 @@ function Organize({ organize_id, activity_id, organize_name }) {
     });
 
     setFilter(filtered);
-  }, [organize_id, activity_id, searchName, member]);
+  }, [searchName, member]);
 
   return (
     <div>
@@ -148,11 +151,11 @@ function Organize({ organize_id, activity_id, organize_name }) {
               </span>
               <span className="flex gap-2">
                 <b className="w-24">วันที่เริ่ม</b>
-                <span>{activity.activity_start}</span>
+                <span>{formatDateToThaiBE(activity.activity_start)}</span>
               </span>
               <span className="flex gap-2">
                 <b className="w-24">วันที่สิ้นสุด</b>
-                <span>{activity.activity_end}</span>
+                <span>{formatDateToThaiBE(activity.activity_end)}</span>
               </span>
               <span className="flex gap-2">
                 <b className="w-24">ราคากิจกรรม</b>
@@ -190,11 +193,16 @@ function Organize({ organize_id, activity_id, organize_name }) {
                   </span>
                   <span className="flex gap-2">
                     <b className="w-24">วันที่เริ่ม</b>
-                    <span>{subActivity.sub_activity_start}</span>
+                    <span>
+                      {formatDateToThaiBE(subActivity.sub_activity_start)}{" "}
+                    </span>
                   </span>
                   <span className="flex gap-2">
                     <b className="w-24">วันที่สิ้นสุด</b>
-                    <span>{subActivity.sub_activity_end}</span>
+                    <span>
+                      {" "}
+                      {formatDateToThaiBE(subActivity.sub_activity_end)}{" "}
+                    </span>
                   </span>
                   <span className="flex gap-2">
                     <b className="w-24">
