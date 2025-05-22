@@ -19,9 +19,10 @@ export const getProfile = async () => {
 
 export const getProfileById = async (id) => {
   try {
-    const [rows] = await db.query("SELECT * FROM member WHERE member_id = ? AND is_admin = 0", [
-      id,
-    ]);
+    const [rows] = await db.query(
+      "SELECT * FROM member WHERE member_id = ? AND is_admin = 0",
+      [id]
+    );
 
     if (rows.length === 0) {
       console.log("user not found");
@@ -95,8 +96,7 @@ export const createProfile = async (data) => {
       { status: 500 }
     );
   }
-}
-
+};
 
 // ลบโปรไฟล์
 export const deleteProfile = async (id) => {
@@ -150,4 +150,66 @@ export const getProfiles = async (page, limit) => {
   };
 };
 
+export const getAllProfileById = async (id, page, limit) => {
+  const offset = (page - 1) * limit;
 
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM member WHERE member_id = ? AND is_admin = 0 LIMIT ? OFFSET ?",
+      [id, limit, offset]
+    );
+
+    const [member_rank] = await db.query(
+      "SELECT member_rank.* FROM member_rank LEFT JOIN member ON member.member_rank_id = member_rank.member_rank_id WHERE member_id = ?",
+      [id]
+    );
+
+    const [getActivityIdFromCheckin] = await db.query(
+      `SELECT checkin.activity_id,checkin_time,is_checkin,activity.activity_name FROM checkin LEFT JOIN activity ON checkin.activity_id = activity.activity_id WHERE member_id = ? AND checkin.sub_activity_id IS NULL`,
+      [id]
+    );
+
+    const [getSubActivityIdFromCheckin] = await db.query(
+      `SELECT checkin.sub_activity_id,is_checkin,checkin.activity_id,checkin_time,sub_activity.sub_activity_name FROM checkin LEFT JOIN sub_activity ON checkin.sub_activity_id = sub_activity.sub_activity_id WHERE member_id = ? AND checkin.sub_activity_id IS NOT NULL`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      console.log("user not found");
+    }
+    // Step 1: Build a map of activity_id to activity object
+    const activityMap = new Map();
+
+    getActivityIdFromCheckin.forEach((act) => {
+      activityMap.set(act.activity_id, {
+        ...act,
+        subactivities: [], // initialize empty subactivity array
+      });
+    });
+
+    // Step 2: Add subactivities to their corresponding activity
+    getSubActivityIdFromCheckin.forEach((sub) => {
+      const activity = activityMap.get(sub.activity_id);
+      if (activity) {
+        activity.subactivities.push({
+          sub_activity_id: sub.sub_activity_id,
+          sub_activity_name: sub.sub_activity_name,
+          checkin_time: sub.checkin_time,
+          is_checkin: sub.is_checkin,
+        });
+      }
+    });
+
+    // Step 3: Convert the map to an array
+    const activityWithSubs = Array.from(activityMap.values());
+
+    return {
+      member: rows[0],
+      member_rank: member_rank[0],
+      activity: activityWithSubs,
+    };
+  } catch (error) {
+    console.error("❌ getProfileById error:", error); // Log the error for debugging
+    throw new Error("Failed to fetch profile by ID"); // Throw a generic error message
+  }
+};
