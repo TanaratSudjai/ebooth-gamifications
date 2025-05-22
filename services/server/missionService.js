@@ -145,3 +145,20 @@ export const deleteMission = async (id) => {
     return { error: "Failed to delete mission", status: 400 };
   }
 };
+
+export const getMissionByActivityId = async (activityId) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT m.*, mt.mission_type_name FROM mission m
+       JOIN mission_type mt ON m.mission_type_id = mt.mission_type_id
+       JOIN activity_mission am ON m.mission_id = am.mission_id
+       JOIN activity a ON am.activity_id = a.activity_id
+       WHERE a.activity_id = ?`,
+      [activityId]
+    );
+    
+    return rows[0];
+  } catch (error) {
+    return { error: "Failed to fetch mission by activity ID", status: 400 };
+  }
+}
