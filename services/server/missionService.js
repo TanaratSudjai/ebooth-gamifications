@@ -1,4 +1,3 @@
-
 import db from "./db";
 import { z } from "zod";
 
@@ -143,5 +142,65 @@ export const deleteMission = async (id) => {
     return { message: "Mission deleted successfully" };
   } catch (error) {
     return { error: "Failed to delete mission", status: 400 };
+  }
+};
+
+export const getMissionByActivityId = async (activityId) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+            m.*, 
+            mt.mission_type_name 
+        FROM 
+            mission m
+        JOIN 
+            mission_type mt ON m.mission_type_id = mt.mission_type_id
+        JOIN 
+            activity_mission am ON m.mission_id = am.mission_id
+        JOIN 
+            activity a ON am.activity_id = a.activity_id
+        WHERE 
+            a.activity_id = ? AND am.sub_activity_id IS NULL;
+      `,
+      [activityId]
+    );
+
+    if (rows.length === 0) {
+      return { error: "No mission found for the given activity ID", status: 404 };
+    }
+
+    return {data: rows}
+  } catch (error) {
+    return { error: "Failed to fetch mission by activity ID", status: 400 };
+  }
+};
+
+export const getMissionBySubActivityId = async (SubActivityId) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+            m.*, 
+            mt.mission_type_name 
+        FROM 
+            mission m
+        JOIN 
+            mission_type mt ON m.mission_type_id = mt.mission_type_id
+        JOIN 
+            activity_mission am ON m.mission_id = am.mission_id
+        JOIN 
+            sub_activity sa ON am.sub_activity_id = sa.sub_activity_id
+        WHERE 
+            sa.sub_activity_id = ? AND am.sub_activity_id IS NOT NULL;
+      `,
+      [SubActivityId]
+    );
+
+    if (rows.length === 0) {
+      return { error: "No mission found for the given sub-activity ID", status: 404 };
+    }
+
+    return {data: rows}
+  } catch (error) {
+    return { error: "Failed to fetch mission by activity ID", status: 400 };
   }
 };
