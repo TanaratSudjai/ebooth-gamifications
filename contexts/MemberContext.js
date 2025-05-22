@@ -10,6 +10,7 @@ const UserDataContext = createContext();
 // Provider 
 export const UserDataProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
+  const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
   const userId = session?.user?.id;
@@ -18,8 +19,11 @@ export const UserDataProvider = ({ children }) => {
     const fetchUserData = async () => {
       try {
         const res = await axios.get(`/api/user/getAllUserData/${userId}`);
+        const res_ac = await axios.get(`/api/activity`);
         setUserData(res.data);
-        // console.log(res.data);
+        setActivity(res_ac.data.data);
+        console.log(res.data);
+
       } catch (err) {
         console.error("Failed to fetch user data:", err);
       } finally {
@@ -33,7 +37,7 @@ export const UserDataProvider = ({ children }) => {
   }, [userId]);
 
   return (
-    <UserDataContext.Provider value={{ userData, loading }}>
+    <UserDataContext.Provider value={{ userData, activity, loading }}>
       {children}
     </UserDataContext.Provider>
   );
