@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
@@ -21,6 +21,7 @@ function Page() {
   const inputRef = useRef(null);
   const scannerRef = useRef(null);
 
+  // โหลดกิจกรรมย่อย
   useEffect(() => {
     const fetchSubActivities = async () => {
       try {
@@ -33,6 +34,7 @@ function Page() {
     fetchSubActivities();
   }, []);
 
+  // ส่งข้อมูล Check-In ไปยัง API
   useEffect(() => {
     const sendCheckIn = async () => {
       if (
@@ -64,11 +66,11 @@ function Page() {
     sendCheckIn();
   }, [form, subActivities]);
 
+  // เริ่มสแกน QR
   const startScan = () => {
     if (scanning) return;
     setScanning(true);
 
-    // Clear any existing scanner instance
     if (scannerRef.current) {
       scannerRef.current.clear();
     }
@@ -104,7 +106,7 @@ function Page() {
         setScanning(false);
       },
       (error) => {
-        // Optional error handler
+        // สามารถใส่ log error ได้หากต้องการ
       }
     );
   };
@@ -124,234 +126,34 @@ function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 text-gray-800 p-4 sm:p-6">
       <div className="container mx-auto max-w-4xl space-y-8">
-        {/* Header Section */}
-        <header className="bg-white shadow-md rounded-lg p-6 border-l-4 border-blue-500">
-          <h1 className="text-3xl font-bold text-blue-800">
-            QR Check-in System
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Scan a QR code to check in to an activity
-          </p>
-        </header>
+        {/* ปุ่มสำหรับเริ่มสแกน */}
+        <div className="flex justify-center">
+          <button
+            onClick={startScan}
+            disabled={scanning}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-indigo-700 transition disabled:opacity-50"
+          >
+            {scanning ? "กำลังสแกน..." : "เริ่มสแกน QR"}
+          </button>
+        </div>
+        <div id="qr-reader" className="mt-6"></div>
 
-        {/* QR Scanner Section */}
-        <section className="bg-white shadow-lg rounded-lg p-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-
-          <div className="flex items-center mb-4">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <button
-                onClick={startScan}
-                disabled={scanning}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                {scanning ? "Scanning..." : "Start Scan"}
-              </button>
-
-              {scanning && (
-                <div
-                  id="qr-reader"
-                  className="w-[300px] h-[300px] border rounded shadow"
-                />
-              )}
-
-              <input
-                ref={inputRef}
-                readOnly
-                className="border p-2 w-full max-w-md mt-4"
-                placeholder="QR data will appear here"
-              />
-
-              {scanSuccess && selectedActivity && (
-                <p className="text-green-600">
-                  ✅ Check-in สำเร็จ: {selectedActivity.sub_activity_name}
-                </p>
-              )}
-            </div>
+        {/* ส่วนแสดง QR Reader */}
+        {scanning && (
+          <div className="mt-4 flex justify-center">
+            <div id="qr-reader" className="w-full max-w-md" />
           </div>
-          {scanning && (
-            <button
-              onClick={stopScan}
-              className="bg-red-500 text-white px-4 py-2 rounded mt-2"
-            >
-              Stop Scan
-            </button>
-          )}
-
-          <div className="flex flex-wrap gap-4 mb-4">
-            {!scanning ? (
-              <button
-                onClick={startScan}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6 py-3 rounded-lg transition shadow-md flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Start Scanning
-              </button>
-            ) : (
-              <button
-                onClick={stopScan}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium px-6 py-3 rounded-lg transition shadow-md flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                Stop Scanning
-              </button>
-            )}
-          </div>
-
-          <input
-            type="text"
-            ref={inputRef}
-            readOnly
-            className="hidden border p-2 mt-2 w-full bg-gray-100"
-          />
-
-          <div
-            id="qr-reader"
-            className="mt-4 mx-auto max-w-md rounded-lg overflow-hidden shadow-inner"
-          />
-
-          {scanning && (
-            <div className="flex justify-center mt-4">
-              <div className="animate-pulse flex space-x-2">
-                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Member Info */}
-        {session?.user && (
-          <section className="bg-white shadow-lg rounded-lg p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 to-teal-500"></div>
-
-            <div className="flex items-center mb-4">
-              <div className="bg-green-100 p-2 rounded-full mr-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-green-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Member Info
-              </h2>
-            </div>
-
-            <div className="bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border border-green-100 mb-4">
-              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">
-                    Username:
-                  </span>
-                  <span className="text-gray-800">{session.user.username}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">
-                    Email:
-                  </span>
-                  <span className="text-gray-800">{session.user.email}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">ID:</span>
-                  <span className="text-gray-800">{session.user.id}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">EXP:</span>
-                  <span className="text-gray-800">{session.user.exp}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">
-                    Points:
-                  </span>
-                  <span className="text-gray-800">
-                    {session.user.point_total} (Remain:{" "}
-                    {session.user.point_remain})
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">
-                    Address:
-                  </span>
-                  <span className="text-gray-800">{session.user.address}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-green-700 font-medium w-24">
-                    Admin:
-                  </span>
-                  <span className="text-gray-800">
-                    {session.user.is_admin ? "Yes" : "No"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium px-5 py-2 rounded-lg transition shadow flex items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Logout
-            </button>
-          </section>
         )}
 
-        {/* Sub Activities */}
+        {/* ข้อมูลที่ได้จากการสแกน */}
+        {scanSuccess && selectedActivity && (
+          <div className="mt-6 bg-green-100 p-4 rounded-lg text-green-700 text-center shadow">
+            ✅ เข้าร่วมกิจกรรมย่อย:{" "}
+            <strong>{selectedActivity.sub_activity_name}</strong> เรียบร้อยแล้ว
+          </div>
+        )}
+
+        {/* รายการกิจกรรม */}
         <section className="bg-white shadow-lg rounded-lg p-6 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
 
@@ -373,7 +175,7 @@ function Page() {
               </svg>
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">
-              Available Activities
+              กิจกรรมที่สามารถเข้าร่วมได้
             </h2>
           </div>
 
@@ -381,7 +183,7 @@ function Page() {
             <div className="bg-blue-50 p-8 rounded-lg text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
               <p className="mt-4 text-blue-700 font-medium">
-                Loading activities...
+                กำลังโหลดรายการกิจกรรม...
               </p>
             </div>
           ) : (
@@ -411,14 +213,6 @@ function Page() {
             </div>
           )}
         </section>
-
-        {/* Footer */}
-        <footer className="text-center text-gray-500 text-sm py-4">
-          <p>
-            © {new Date().getFullYear()} QR Check-in System. All rights
-            reserved.
-          </p>
-        </footer>
       </div>
     </div>
   );
