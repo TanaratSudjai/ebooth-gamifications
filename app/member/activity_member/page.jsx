@@ -3,14 +3,22 @@ import React, { useState } from 'react'
 import { useUserData } from '@/contexts/MemberContext';
 import { formatDateToThaiBE } from '@/utils/formatdatelocal';
 import { motion } from 'framer-motion';
-
+import { useRouter } from 'next/navigation';
 function Page() {
+
+  const r = useRouter();
+
   const { activity, loading } = useUserData();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredActivities = activity?.filter((act) =>
     act.activity_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleActivity = (params) => {
+    r.push('activity_member/activity/cart/' + params)
+  }
+
 
   return (
     <motion.div
@@ -45,6 +53,9 @@ function Page() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 key={index}
+                onClick={() => {
+                  handleActivity(act.activity_id)
+                }}
                 className="bg-white border-l-[5px] border-amber-400 rounded-xl shadow-lg p-4 flex flex-col gap-2 hover:shadow-xl transition duration-300"
               >
                 <h3 className="text-xl font-semibold text-gray-800">{act.activity_name}</h3>
