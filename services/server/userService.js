@@ -37,66 +37,50 @@ export const getProfileById = async (id) => {
 
 // สร้างโปรไฟล์ใหม่
 export const createProfile = async (data) => {
-  try {
-    const profileSchema = z.object({
-      member_username: z.string().min(3, "Username is too short"),
-      member_email: z.string().email("Invalid email format"),
-      member_password: z
-        .string()
-        .min(6, "Password must be at least 6 characters"),
-      member_address: z.string().min(1, "Address is required"),
-    });
+  const profileSchema = z.object({
+    member_username: z.string().min(3, "Username is too short"),
+    member_email: z.string().email("Invalid email format"),
+    member_password: z.string().min(6, "Password must be at least 6 characters"),
+    member_address: z.string().min(1, "Address is required"),
+  });
 
-    const parseResult = profileSchema.safeParse(data);
+  const parseResult = profileSchema.safeParse(data);
 
-    if (!parseResult.success) {
-      throw new Error(
-        parseResult.error.errors.map((e) => e.message).join(", ")
-      );
-    }
-
-    const { member_username, member_email, member_password, member_address } =
-      parseResult.data;
-
-    const [existingUser] = await db.query(
-      "SELECT member_id FROM member WHERE member_username = ?",
-      [member_username]
-    );
-
-    if (existingUser.length > 0) {
-      return {
-        error: true,
-        message: "Username or email already exists",
-      };
-    }
-
-    const hashedPassword = await bcrypt.hash(member_password, 10);
-
-    const [result] = await db.query(
-      `INSERT INTO member (
-        member_username, member_email, member_password, 
-        member_exp, member_rank_id, member_register, 
-        member_address, member_point_total, member_point_remain
-      ) VALUES (?, ?, ?, 0, 1, NOW(), ?, 0, 0)`,
-      [member_username, member_email, hashedPassword, member_address]
-    );
-
-    const [newProfileRows] = await db.query(
-      "SELECT * FROM member WHERE member_id = ?",
-      [result.insertId]
-    );
-
-    return newProfileRows[0];
-  } catch (error) {
-    return NextResponse.json(
-      {
-        status: "error",
-        message: error.message || "Something went wrong",
-      },
-      { status: 500 }
-    );
+  if (!parseResult.success) {
+    throw new Error(parseResult.error.errors.map((e) => e.message).join(", "));
   }
+
+  const { member_username, member_email, member_password, member_address } =
+    parseResult.data;
+
+  const [existingUser] = await db.query(
+    "SELECT member_id FROM member WHERE member_username = ?",
+    [member_username]
+  );
+
+  if (existingUser.length > 0) {
+    throw new Error("Username or email already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(member_password, 10);
+
+  const [result] = await db.query(
+    `INSERT INTO member (
+      member_username, member_email, member_password, 
+      member_exp, member_rank_id, member_register, 
+      member_address, member_point_total, member_point_remain
+    ) VALUES (?, ?, ?, 0, 1, NOW(), ?, 0, 0)`,
+    [member_username, member_email, hashedPassword, member_address]
+  );
+
+  const [newProfileRows] = await db.query(
+    "SELECT * FROM member WHERE member_id = ?",
+    [result.insertId]
+  );
+
+  return newProfileRows[0];
 };
+
 
 // ลบโปรไฟล์
 export const deleteProfile = async (id) => {
