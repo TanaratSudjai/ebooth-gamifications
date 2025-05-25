@@ -64,86 +64,85 @@ function Page() {
   }, [form, subActivities]);
 
   const startScan = () => {
-  if (scanning) return;
-  setScanning(true);
+    if (scanning) return;
+    setScanning(true);
 
-  if (scannerRef.current) {
-    scannerRef.current.clear();
-  }
+    if (scannerRef.current) {
+      scannerRef.current.clear();
+    }
 
-  Html5Qrcode.getCameras()
-    .then((devices) => {
-      if (!devices || devices.length === 0) {
-        throw new Error("No camera devices found.");
-      }
-
-      // Try to find the back camera
-      const backCamera = devices.find(device =>
-        device.label.toLowerCase().includes("back") ||
-        device.label.toLowerCase().includes("environment")
-      );
-
-      const selectedDeviceId = backCamera?.id || devices[0].id;
-
-      const scanner = new Html5Qrcode("qr-reader", {
-        experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true,
-        },
-      });
-
-      scannerRef.current = scanner;
-
-      scanner.start(
-        { deviceId: { exact: selectedDeviceId } },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText) => {
-          if (inputRef.current) {
-            inputRef.current.value = `${decodedText} / ${session?.user.id}`;
-            const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
-
-            if (numbers.length >= 2 && session?.user?.id) {
-              setForm({
-                activity_id: numbers[0],
-                sub_activity_id: numbers[1],
-                member_id: session.user.id,
-              });
-            }
-          }
-
-          scanner.stop().then(() => {
-            scanner.clear();
-            scannerRef.current = null;
-            setScanning(false);
-          });
-        },
-        (error) => {
-          // Handle scan error or continue silently
+    Html5Qrcode.getCameras()
+      .then((devices) => {
+        if (!devices || devices.length === 0) {
+          throw new Error("No camera devices found.");
         }
-      );
-    })
-    .catch((err) => {
-      console.error("Error accessing camera:", err);
-      setScanning(false);
-    });
-};
 
+        // Try to find the back camera
+        const backCamera = devices.find(
+          (device) =>
+            device.label.toLowerCase().includes("back") ||
+            device.label.toLowerCase().includes("environment")
+        );
+
+        const selectedDeviceId = backCamera?.id || devices[0].id;
+
+        const scanner = new Html5Qrcode("qr-reader", {
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
+        });
+
+        scannerRef.current = scanner;
+
+        scanner.start(
+          { deviceId: { exact: selectedDeviceId } },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            if (inputRef.current) {
+              inputRef.current.value = `${decodedText} / ${session?.user.id}`;
+              const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
+
+              if (numbers.length >= 2 && session?.user?.id) {
+                setForm({
+                  activity_id: numbers[0],
+                  sub_activity_id: numbers[1],
+                  member_id: session.user.id,
+                });
+              }
+            }
+
+            scanner.stop().then(() => {
+              scanner.clear();
+              scannerRef.current = null;
+              setScanning(false);
+            });
+          },
+          (error) => {
+            // Handle scan error or continue silently
+          }
+        );
+      })
+      .catch((err) => {
+        console.error("Error accessing camera:", err);
+        setScanning(false);
+      });
+  };
 
   const stopScan = async () => {
-  if (scannerRef.current) {
-    try {
-      await scannerRef.current.stop(); // Stop the camera stream
-      await scannerRef.current.clear(); // Clear the scanner UI
-    } catch (e) {
-      console.warn("Error stopping scanner:", e);
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop(); // Stop the camera stream
+        await scannerRef.current.clear(); // Clear the scanner UI
+      } catch (e) {
+        console.warn("Error stopping scanner:", e);
+      }
+      scannerRef.current = null;
+      setScanning(false);
     }
-    scannerRef.current = null;
-    setScanning(false);
-  }
-};
-
+  };
 
   return (
     <div className="text-gray-800 p-4 sm:p-6">
