@@ -1,7 +1,7 @@
 import React from "react";
 import Navbar from "./cmponents/common/Navbar";
 import Footer from "./cmponents/common/Footer";
-import { AnimatePresence } from "framer-motion";
+import MotionLayout from "./cmponents/common/MotionLayout";
 import { UserDataProvider } from "../../contexts/MemberContext";
 import { CartProvider } from "@/contexts/CartContext";
 import CartCountBadge from "./cmponents/common/CartCountBadge";
@@ -14,9 +14,9 @@ export default function MemberLayout({ children }) {
         <CartProvider>
           <div className="flex flex-col min-h-screen relative">
             <Navbar />
-            <AnimatePresence mode="wait">
+            <MotionLayout>
               <main className="flex-1 bg-white p-2">{children}</main>
-            </AnimatePresence>
+            </MotionLayout>
             <Footer />
             <CartCountBadge />
           </div>
