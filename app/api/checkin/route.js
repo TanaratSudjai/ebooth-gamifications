@@ -36,7 +36,9 @@ export async function POST(req) {
   try {
     const checkin = await createCheckIn(await req.json());
     console.log(checkin);
-    if (checkin === null) {
+
+    if (checkin.status === 409) {
+      console.log(checkin.status);
       return NextResponse.json(checkin, { status: checkin.status });
     }
     return NextResponse.json(checkin, { status: checkin.status });

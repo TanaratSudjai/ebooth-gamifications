@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScanner } from "html5-qrcode";
+
 import { motion, AnimatePresence } from "framer-motion";
 
 function Page() {
@@ -70,49 +71,73 @@ function Page() {
       scannerRef.current.clear();
     }
 
-    const scanner = new Html5QrcodeScanner("qr-reader", {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true,
-      },
-      rememberLastUsedCamera: true,
-    });
-
-    scannerRef.current = scanner;
-
-    scanner.render(
-      (decodedText) => {
-        if (inputRef.current) {
-          inputRef.current.value = `${decodedText} / ${session?.user.id}`;
-          const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
-
-          if (numbers.length >= 2 && session?.user?.id) {
-            F;
-            setForm({
-              activity_id: numbers[0],
-              sub_activity_id: numbers[1],
-              member_id: session.user.id,
-            });
-          }
+    Html5Qrcode.getCameras()
+      .then((devices) => {
+        if (!devices || devices.length === 0) {
+          throw new Error("No camera devices found.");
         }
 
-        scanner.clear();
-        scannerRef.current = null;
+        // Try to find the back camera
+        const backCamera = devices.find(
+          (device) =>
+            device.label.toLowerCase().includes("back") ||
+            device.label.toLowerCase().includes("environment")
+        );
+
+        const selectedDeviceId = backCamera?.id || devices[0].id;
+
+        const scanner = new Html5Qrcode("qr-reader", {
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
+        });
+
+        scannerRef.current = scanner;
+
+        scanner.start(
+          { deviceId: { exact: selectedDeviceId } },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            if (inputRef.current) {
+              inputRef.current.value = `${decodedText} / ${session?.user.id}`;
+              const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
+
+              if (numbers.length >= 2 && session?.user?.id) {
+                setForm({
+                  activity_id: numbers[0],
+                  sub_activity_id: numbers[1],
+                  member_id: session.user.id,
+                });
+              }
+            }
+
+            scanner.stop().then(() => {
+              scanner.clear();
+              scannerRef.current = null;
+              setScanning(false);
+            });
+          },
+          (error) => {
+            // Handle scan error or continue silently
+          }
+        );
+      })
+      .catch((err) => {
+        console.error("Error accessing camera:", err);
         setScanning(false);
-      },
-      (error) => {
-        // log error if needed
-      }
-    );
+      });
   };
 
   const stopScan = async () => {
     if (scannerRef.current) {
       try {
-        await scannerRef.current.clear();
+        await scannerRef.current.stop(); // Stop the camera stream
+        await scannerRef.current.clear(); // Clear the scanner UI
       } catch (e) {
-        console.warn("Scanner cleanup error:", e);
+        console.warn("Error stopping scanner:", e);
       }
       scannerRef.current = null;
       setScanning(false);

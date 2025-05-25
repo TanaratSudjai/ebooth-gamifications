@@ -234,8 +234,8 @@ export const createCheckIn = async (data) => {
 
         if (existingCheckIn) {
           return {
-            status: 400,
-            message: "You have already registered for this activity.",
+            status: 409,
+            message: "You have already registered for this sub activity.",
           };
         }
 

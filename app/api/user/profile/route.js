@@ -46,6 +46,7 @@ export async function POST(req) {
         { status: 409 }
       );
     }
+
     return NextResponse.json(
       {
         status: "success",
@@ -55,15 +56,19 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    if (err.code === "ER_DUP_ENTRY") {
-      return {
-        error: true,
-        message: "Username or email already exists",
-        statusCode: 409,
-      };
+    if (error.code === "ER_DUP_ENTRY") {
+      return NextResponse.json(
+        {
+          error: true,
+          message: "Username or email already exists",
+        },
+        { status: 409 }
+      );
     }
-    throw err;
-    console.log(error.message);
+
+    console.log(error.message); // Moved before the throw
+    throw error;
   }
 }
+
 
