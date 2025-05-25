@@ -33,7 +33,7 @@ function Footer() {
         {/* ปุ่ม SCAN ตรงกลางแบบเด่น */}
         <div
           onClick={() => handleClick("")}
-          className="absolute left-1/2 transform -translate-x-1/2 bg-[#FF6F00] text-white px-6 py-3 rounded-full shadow-xl border-4 border-white cursor-pointer hover:scale-105 transition-transform duration-300"
+          className=" bg-[#FF6F00] text-white px-6 py-3 rounded-full shadow-xl border-4 border-white cursor-pointer hover:scale-105 transition-transform duration-300"
         >
           <span className="font-bold">SCAN</span>
         </div>

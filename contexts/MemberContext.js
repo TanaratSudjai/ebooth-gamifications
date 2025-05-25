@@ -22,7 +22,7 @@ export const UserDataProvider = ({ children }) => {
         const res_ac = await axios.get(`/api/activity`);
         setUserData(res.data);
         setActivity(res_ac.data.data);
-        console.log(res.data);
+        // console.log(res.data);
 
       } catch (err) {
         console.error("Failed to fetch user data:", err);
