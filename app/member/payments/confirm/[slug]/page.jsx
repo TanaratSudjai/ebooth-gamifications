@@ -46,12 +46,12 @@ function Page() {
       try {
         const response = await axios.post("/api/checkin", booking);
         showSuccess("จองเรียบร้อย");
-        localStorage.setItem("cart", []);
+        localStorage.setItem("cart", JSON.stringify([]));
         r.push("/member/profile_member");
       } catch (err) {
         if (axios.isAxiosError(err) && err.response?.status === 409) {
           showWarning("คุณจองไปแล้ว");
-          localStorage.setItem("cart", []);
+          localStorage.setItem("cart", JSON.stringify([]));
           r.push("/member/profile_member");
         } else {
           console.error("เกิดข้อผิดพลาด:", err);
