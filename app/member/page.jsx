@@ -125,7 +125,7 @@ function Page() {
             });
           },
           (error) => {
-            // Handle scan error or continue silently
+            console.log(error)
           }
         );
       })
