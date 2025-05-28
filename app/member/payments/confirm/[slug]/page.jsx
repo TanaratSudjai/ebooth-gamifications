@@ -17,7 +17,7 @@ function Page() {
   const { data: session } = useSession();
   const { showWarning, showError, showSuccess } = useAlert();
   async function handleSubmitBooking() {
-    const member_id = session?.user.id;
+    const member_id = session?.user?.id;
     const group = {};
     const activity_ids = [];
     const sub_activity_ids = [];
