@@ -215,16 +215,53 @@ export const checkin = async (data) => {
 
     const { sub_activity_id, member_id, activity_id } = checkinResult.data;
 
+    const [checkActivityRows] = await db.query(
+      "SELECT * FROM checkin WHERE sub_activity_id = ? AND member_id = ? AND activity_id = ? AND is_checkin = 1",
+      [sub_activity_id, member_id, activity_id]
+    );
+
+    if (checkActivityRows.length > 0){
+      return { message: "already checkin", status: 400 };
+    }
+
     const [checkinRows] = await db.query(
       "SELECT * FROM checkin WHERE sub_activity_id = ? AND member_id = ? AND activity_id = ?",
       [sub_activity_id, member_id, activity_id]
     );
 
     if (checkinRows.length > 0) {
-      const [updateCheckIn] = await db.query(
+      await db.query(
         "UPDATE checkin SET is_checkin = 1 WHERE sub_activity_id = ? AND member_id = ? AND activity_id = ?",
         [sub_activity_id, member_id, activity_id]
       );
+
+      const [getActivityRewardPoint] = await db.query(
+            `SELECT reward_points FROM activity JOIN checkin on activity.activity_id = checkin.activity_id 
+            WHERE activity.activity_id = ? AND is_checkin = 0`,
+            [activity_id]
+          );
+
+      await db.query(
+        "UPDATE checkin SET is_checkin = 1 WHERE member_id = ? AND activity_id = ?",
+        [member_id, activity_id]
+      );
+
+      const [getSubActivityRewardPoint] = await db.query(
+            `SELECT sub_activity_point FROM sub_activity WHERE sub_activity_id = ?`,
+            [sub_activity_id]
+          );  
+        
+      const subActivityPoint = getSubActivityRewardPoint[0].sub_activity_point || 0
+      const activityPoint = getActivityRewardPoint[0].reward_points || 0
+
+      await db.query(
+      `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
+      [
+        subActivityPoint + activityPoint,
+        subActivityPoint + activityPoint,
+        member_id,
+      ]
+    );
 
       return { message: "Check-in updated successfully", status: 200 };
     }
