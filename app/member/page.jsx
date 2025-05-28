@@ -6,7 +6,6 @@ import axios from "axios";
 import { Html5Qrcode } from "html5-qrcode";
 import { motion, AnimatePresence } from "framer-motion";
 
-
 function ScanSuccess({ activityName }) {
   return (
     <motion.div
@@ -55,6 +54,7 @@ function Page() {
   }, []);
 
   const sendCheckIn = async () => {
+    console.log("DEBUG form:", form);
     if (
       form.activity_id &&
       form.sub_activity_id &&
@@ -62,6 +62,7 @@ function Page() {
       !checkInInProgress
     ) {
       setCheckInInProgress(true);
+
       try {
         await axios.post("/api/checkin/ifCheckIn", form);
         setScanSuccess(true);
@@ -118,17 +119,18 @@ function Page() {
             qrbox: { width: 250, height: 250 },
           },
           (decodedText) => {
-            if (inputRef.current) {
-              inputRef.current.value = `${decodedText} / ${session?.user.id}`;
-              const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
-
-              if (numbers.length >= 2 && session?.user?.id) {
-                setForm({
-                  activity_id: numbers[0],
-                  sub_activity_id: numbers[1],
-                  member_id: session.user.id,
-                });
-              }
+            const numbers = decodedText.match(/\d+/g)?.map(Number) || [];
+            if (numbers.length >= 2 && session?.user?.id) {
+              setForm({
+                activity_id: numbers[0],
+                sub_activity_id: numbers[1],
+                member_id: session.user.id,
+              });
+            } else {
+              console.warn("❌ Invalid QR data or session:", {
+                numbers,
+                session,
+              });
             }
 
             scanner.stop().then(() => {
@@ -139,6 +141,7 @@ function Page() {
           },
           (error) => {
             console.warn("Scan error", error);
+            console.log(error);
           }
         );
       })
