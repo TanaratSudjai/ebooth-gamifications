@@ -33,7 +33,7 @@ function Page() {
             </div>
             <button
               onClick={() =>
-                 removeFromCart(item.sub_activity_id, item.activity_id)
+                removeFromCart(item.sub_activity_id, item.activity_id)
               }
               className="text-red-500 hover:text-red-600 text-sm"
             >

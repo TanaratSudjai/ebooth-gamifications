@@ -75,7 +75,7 @@ function Page() {
   }, [price]);
 
   return (
-    <div className="flex flex-col items-center mt-24">
+    <div className="flex flex-col items-center mt-5">
       <div className="flex flex-col items-center justify-center bg-white">
         <h4 className="font-semibold  text-gray-800">
           QR สำหรับยอดเงิน: {price} บาท
@@ -97,7 +97,7 @@ function Page() {
       </div>
       <div
         onClick={() => handleSubmitBooking()}
-        className="bg-[#FF6F00] text-center hover:bg-amber-600 text-white px-4 py-2 rounded-md transition-colors duration-200 mt-24"
+        className="bg-[#FF6F00] text-center hover:bg-amber-600 text-white px-4 py-2 rounded-md transition-colors duration-200 mt-4"
       >
         ยืนยันการชำระเงิน
       </div>

@@ -6,17 +6,14 @@ import { useRouter } from "next/navigation";
 function page() {
   const r = useRouter();
   const { cart, removeFromCart } = useCart();
-  const [activityId, setActivityId] = useState(null);
 
   const handleConfirmBooking = () => {
     // ดําเนินการยืนยันการจอง
-    console.log("ยืนยันการจอง", activityId);
-    r.push("/member/payments?activity_id=" + activityId);
+
+    r.push("/member/payments");
   };
 
-  useEffect(() => {
-    setActivityId();
-  }, [cart]);
+  useEffect(() => {}, [cart]);
 
   if (cart.length === 0) {
     return (
@@ -42,7 +39,7 @@ function page() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 0, x: -30 }}
       transition={{ duration: 0.4 }}
-      className="w-full min-h-screen bg-white p-4 sm:p-6 md:p-8 mb-24"
+      className="w-full h-screen bg-white p-4 sm:p-6 md:p-8 mb-24"
     >
       <div className="max-w-full mx-auto">
         <h1 className="text-2xl sm:text-3xl font-extrabold mb-4 border-b pb-2 text-gray-800">
@@ -71,7 +68,7 @@ function page() {
                     </p>
                     <button
                       onClick={() =>
-                         removeFromCart(item.sub_activity_id, item.activity_id)
+                        removeFromCart(item.sub_activity_id, item.activity_id)
                       }
                       className="bg-[#FF6F00] text-white px-2 rounded-md transition-colors duration-200"
                       aria-label={`ลบ ${item.sub_activity_name} ออกจากรายการ`}
