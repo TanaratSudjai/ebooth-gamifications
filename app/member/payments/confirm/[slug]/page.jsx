@@ -47,6 +47,7 @@ function Page() {
         const response = await axios.post("/api/checkin", booking);
         showSuccess("จองเรียบร้อย");
         localStorage.setItem("cart", JSON.stringify([]));
+        window.location.reload();
         r.push("/member/profile_member");
       } catch (err) {
         if (axios.isAxiosError(err) && err.response?.status === 409) {
