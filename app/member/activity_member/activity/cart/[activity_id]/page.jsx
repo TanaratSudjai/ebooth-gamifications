@@ -12,7 +12,7 @@ function page() {
   const [subactivity, setSubActiivity] = useState(null);
   const [main, setMain] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
 
   // method
   async function GetActivity(params) {
@@ -59,29 +59,41 @@ function page() {
             transition={{ duration: 0.4 }}
             className="p-4 border-2 border-gray-800 rounded-sm shadow-md text-white bg-gray-800 space-y-2"
           >
-            <div>
-              <span className="font-semibold text-orange-400 w-40">
-                ชื่อกิจกรรม:
-              </span>{" "}
-              {main.activity_name}
-            </div>
-            <div>
-              <span className="font-semibold text-orange-400 w-40">
-                รายละเอียด:
-              </span>{" "}
-              {main.activity_description}
-            </div>
-            <div>
-              <span className="font-semibold text-orange-400 w-40">
-                จำนวนรับ:
-              </span>{" "}
-              {main.activity_max}
-            </div>
-            <div>
-              <span className="font-semibold text-orange-400 w-40">
-                วันที่เริ่ม:
-              </span>{" "}
-              {formatDateToThaiBE(main.activity_start)}
+            <div className="flex justify-between  gap-4">
+              <div className="flex flex-col gap-1 ">
+                <div>
+                  <span className="font-semibold text-orange-400 w-40">
+                    ชื่อกิจกรรม:
+                  </span>{" "}
+                  {main.activity_name}
+                </div>
+                <div>
+                  <span className="font-semibold text-orange-400 w-40">
+                    รายละเอียด:
+                  </span>{" "}
+                  {main.activity_description}
+                </div>
+                <div>
+                  <span className="font-semibold text-orange-400 w-40">
+                    จำนวนรับ:
+                  </span>{" "}
+                  {main.activity_max}
+                </div>
+                <div>
+                  <span className="font-semibold text-orange-400 w-40">
+                    วันที่เริ่ม:
+                  </span>{" "}
+                  {formatDateToThaiBE(main.activity_start)}
+                </div>
+              </div>
+              <div className="">
+                <button
+                  onClick={() => addToCart(main)}
+                  className="cursor-pointer bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-xl"
+                >
+                  เข้าร่วม
+                </button>
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -99,7 +111,10 @@ function page() {
       >
         {subactivity && Array.isArray(subactivity) ? (
           subactivity.map((sub, index) => {
-            if (sub.sub_activity_max > 0) {
+            if (
+              sub.sub_activity_max > 0 &&
+              cart.some((item) => item.activity_id === main.activity_id)
+            ) {
               return (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -108,16 +123,32 @@ function page() {
                   transition={{ duration: 0.4 }}
                   key={index}
                   className="p-3  rounded-lg shadow"
-                  onClick={() => addToCart(sub)}
                 >
-                  <div className="font-semibold text-orange-400">
-                    Subactivity Name:
+                  <div className="flex gap-2 justify-between">
+                    <div className="flex flex-col gap-2">
+                      <div className="font-semibold text-orange-400">
+                        Subactivity Name:
+                      </div>
+                      <div>{sub.sub_activity_name}</div>
+                      <div className="font-semibold text-orange-400 mt-2">
+                        Details:
+                      </div>
+                      <div>{sub.sub_activity_description}</div>
+                    </div>
+
+                    <div className="">
+                      <motion.button
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 0, x: -30 }}
+                        transition={{ duration: 0.4 }}
+                        onClick={() => addToCart(sub)}
+                        className="cursor-pointer bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-xl"
+                      >
+                        เข้าร่วม
+                      </motion.button>
+                    </div>
                   </div>
-                  <div>{sub.sub_activity_name}</div>
-                  <div className="font-semibold text-orange-400 mt-2">
-                    Details:
-                  </div>
-                  <div>{sub.sub_activity_description}</div>
                 </motion.div>
               );
             } else {

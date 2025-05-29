@@ -28,7 +28,11 @@ function Page() {
                 {item.sub_activity_name || item.activity_name}
               </p>
               <p className="text-sm text-gray-600">
-                {item.sub_activity_price || item.activity_price || 0} บาท
+                {item.sub_activity_price
+                  ? `${item.sub_activity_price} บาท`
+                  : item.activity_price
+                  ? `${item.activity_price} บาท`
+                  : "ไม่มีค่าใช้จ่าย"}
               </p>
             </div>
             <button
