@@ -5,11 +5,14 @@ import { useUserData } from "@/contexts/MemberContext";
 import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 function Page() {
   const { data: session } = useSession();
   const { userData, loading } = useUserData();
   const exp = 1000;
+
+  const r = useRouter();
 
   return (
     <motion.div
@@ -135,7 +138,10 @@ function Page() {
 
       {/* Button */}
       <div className="flex justify-center mb-50">
-        <button className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-2 px-6 rounded-full shadow-md transition duration-300">
+        <button
+          onClick={() => r.push("/member/activity_member")}
+          className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-2 px-6 rounded-full shadow-md transition duration-300"
+        >
           ➕ จองกิจกรรมเพิ่ม
         </button>
       </div>

@@ -62,7 +62,6 @@ function Page() {
                     key={index}
                     onClick={() => {
                       handleActivity(act.activity_id);
-                      addToCart(act);
                     }}
                     className="bg-white border-l-[5px] border-amber-400 rounded-xl shadow-lg p-4 flex flex-col gap-2 hover:shadow-xl transition duration-300"
                   >
