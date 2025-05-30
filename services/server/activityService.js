@@ -1,6 +1,9 @@
 import db from "./db"; // ใช้ mysql2/promise connection
 import { z } from "zod"; // ใช้สำหรับการตรวจสอบข้อมูล
-
+const path = require("path"); // เพิ่มการ require โมดูล path
+const fs = require("fs");
+const QRCode = require("qrcode"); // โมดูลสำหรับการสร้าง QR Code
+import { uploadQR } from "@/utils/uploadQR"; // โมดูลสำหรับการอัปโหลด QR Code ไปยัง Cloudflare R2
 export const createActivity = async (data) => {
   try {
     const activitySchema = z.object({
@@ -25,6 +28,18 @@ export const createActivity = async (data) => {
       mission_ids: z.array(
         z.number().int().positive("required sub activity id")
       ),
+      activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const activityResult = activitySchema.safeParse(data);
@@ -45,6 +60,7 @@ export const createActivity = async (data) => {
       organize_id,
       activity_price,
       mission_ids,
+      activity_image,
     } = activityResult.data;
 
     let is_multi_day;
@@ -63,8 +79,8 @@ export const createActivity = async (data) => {
 
     const [result] = await db.query(
       `INSERT INTO activity (
-          activity_name, activity_description, activity_start, activity_end, activity_max, reward_points, is_multi_day, organize_id, activity_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          activity_name, activity_description, activity_start, activity_end, activity_max, reward_points, is_multi_day, organize_id, activity_price, activity_image
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         activity_name,
         activity_description,
@@ -75,6 +91,7 @@ export const createActivity = async (data) => {
         is_multi_day,
         organize_id,
         activity_price,
+        activity_image,
       ]
     );
 
@@ -86,6 +103,20 @@ export const createActivity = async (data) => {
         [activityId, mission_id]
       );
     }
+
+    // ✅ Generate QR Code Buffer
+      const qrData = `main,${activityId}`;
+      const qrBuffer = await QRCode.toBuffer(qrData);
+    
+        // ✅ Upload to Cloudflare R2
+      const r2Key = `qrcode/${activityId}.png`;
+      const qrImageUrl = await uploadQR(qrBuffer, r2Key); // ⬅️ Returns public R2 URL
+    
+        // ✅ Store R2 public URL
+        await db.query(
+          `UPDATE activity SET qr_activity_image_url = ? WHERE activity_id = ?`,
+          [qrImageUrl, activityId]
+        );
 
     const [newActivityRows] = await db.query(
       "SELECT * FROM activity WHERE activity_id = ?",
