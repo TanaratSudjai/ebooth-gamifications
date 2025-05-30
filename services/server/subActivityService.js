@@ -26,7 +26,21 @@ export const createSubActivity = async (data) => {
       sub_activity_max: z.number().min(1, "Max member is required"),
       sub_activity_point: z.number().min(1, "Reward points is required"),
       sub_activity_price: z.number().min(0, "Price is required"),
-      mission_ids: z.array(z.number().int().positive("required sub activity id")),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
+      sub_activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const subActivityResult = subActivitySchema.safeParse(data);
@@ -45,13 +59,16 @@ export const createSubActivity = async (data) => {
       sub_activity_point,
       sub_activity_price,
       mission_ids,
+      sub_activity_image,
     } = subActivityResult.data;
 
     const [result] = await db.query(
       `INSERT INTO sub_activity (
+        sub_activity_image,
         sub_activity_name, activity_id, sub_activity_description, sub_activity_start, sub_activity_end, sub_activity_max, sub_activity_point, sub_activity_price
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        sub_activity_image,
         sub_activity_name,
         activity_id,
         sub_activity_description,
@@ -100,7 +117,6 @@ export const createSubActivity = async (data) => {
     throw new Error("Create subActivity failed: " + error.message);
   }
 };
-
 
 export const getSubActivityById = async (id) => {
   try {
@@ -220,7 +236,7 @@ export const checkin = async (data) => {
       [sub_activity_id, member_id, activity_id]
     );
 
-    if (checkActivityRows.length > 0){
+    if (checkActivityRows.length > 0) {
       return { message: "already checkin", status: 400 };
     }
 
@@ -236,10 +252,10 @@ export const checkin = async (data) => {
       );
 
       const [getActivityRewardPoint] = await db.query(
-            `SELECT reward_points FROM activity JOIN checkin on activity.activity_id = checkin.activity_id 
+        `SELECT reward_points FROM activity JOIN checkin on activity.activity_id = checkin.activity_id 
             WHERE activity.activity_id = ? AND is_checkin = 0`,
-            [activity_id]
-          );
+        [activity_id]
+      );
 
       await db.query(
         "UPDATE checkin SET is_checkin = 1 WHERE member_id = ? AND activity_id = ?",
@@ -247,21 +263,22 @@ export const checkin = async (data) => {
       );
 
       const [getSubActivityRewardPoint] = await db.query(
-            `SELECT sub_activity_point FROM sub_activity WHERE sub_activity_id = ?`,
-            [sub_activity_id]
-          );  
-        
-      const subActivityPoint = getSubActivityRewardPoint[0].sub_activity_point || 0
-      const activityPoint = getActivityRewardPoint[0].reward_points || 0
+        `SELECT sub_activity_point FROM sub_activity WHERE sub_activity_id = ?`,
+        [sub_activity_id]
+      );
+
+      const subActivityPoint =
+        getSubActivityRewardPoint[0].sub_activity_point || 0;
+      const activityPoint = getActivityRewardPoint[0].reward_points || 0;
 
       await db.query(
-      `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
-      [
-        subActivityPoint + activityPoint,
-        subActivityPoint + activityPoint,
-        member_id,
-      ]
-    );
+        `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
+        [
+          subActivityPoint + activityPoint,
+          subActivityPoint + activityPoint,
+          member_id,
+        ]
+      );
 
       return { message: "Check-in updated successfully", status: 200 };
     }
@@ -296,4 +313,3 @@ export const checkin = async (data) => {
     return "Check-in failed: " + error.message;
   }
 };
-
