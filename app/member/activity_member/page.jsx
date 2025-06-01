@@ -11,6 +11,8 @@ function Page() {
   const { addToCart } = useCart();
 
   const { activity, loading } = useUserData();
+  console.log(activity);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredActivities = activity?.filter((act) =>
@@ -51,7 +53,7 @@ function Page() {
             ⏳ กำลังโหลดข้อมูลกิจกรรมทั้งหมด...
           </div>
         ) : filteredActivities && filteredActivities.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-20">
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-20 px-8">
             {filteredActivities.map(
               (act, index) =>
                 act.activity_max > 0 && (
@@ -63,21 +65,12 @@ function Page() {
                     onClick={() => {
                       handleActivity(act.activity_id);
                     }}
-                    className="bg-white border-l-[5px] border-amber-400 rounded-xl shadow-lg p-4 flex flex-col gap-2 hover:shadow-xl transition duration-300"
+                    className={`hover:shadow-xl transition duration-300 rounded-4xl shadow-2xl p-4 border-6 border-orange-400 h-[300px]`}
+                    style={{ backgroundImage: `url(${act.activity_image})` }}
                   >
-                    <h3 className="text-xl font-semibold text-gray-800">
+                    <span className="text-stroke text-white font-bold text-lg relative z-0 top-[-35px] flex justify-center bg-amber-300 py-2 px-4 rounded-2xl border-4 border-orange-400 ">
                       {act.activity_name}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {act.activity_description}
-                    </p>
-                    <div className="flex justify-between text-sm text-gray-700 mt-2">
-                      <span>📅 {formatDateToThaiBE(act.activity_start)}</span>
-                      <span>🎁 {act.reward_points} แต้ม</span>
-                    </div>
-                    <div className="flex justify-end text-right text-amber-600 font-medium text-sm">
-                      💸 {act.activity_price} บาท
-                    </div>
+                    </span>
                   </motion.div>
                 )
             )}

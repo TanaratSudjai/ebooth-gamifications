@@ -44,23 +44,27 @@ function ActivityData() {
     sub_activity_point: 1,
     sub_activity_price: 1,
     mission_ids: [],
+    sub_activity_image: null,
+    preview: null,
   });
 
   // _-----
-  const payloadSubactivity = {
-    activity_id: parseInt(selectedId),
-    sub_activity_name: formData.sub_activity_name,
-    sub_activity_description: formData.sub_activity_description,
-    // แปลงวันที่ให้เป็นฟอร์แมตที่ MySQL รองรับ (YYYY-MM-DD HH:MM:SS)
-    sub_activity_start: toSQLDatetimeFormat(formData.sub_activity_start), // ใช้เพื่อแปลงก่อนส่งไปฐานข้อมูล
-    sub_activity_end: toSQLDatetimeFormat(formData.sub_activity_end),
-    sub_activity_max: Number(formData.sub_activity_max),
-    sub_activity_point: Number(formData.sub_activity_point),
-    sub_activity_price: Number(formData.sub_activity_price),
-    mission_ids: Array.isArray(formData.mission_ids)
-      ? formData.mission_ids.map((id) => parseInt(id))
-      : [],
-  };
+  // const payloadSubactivity = {
+  //   activity_id: parseInt(selectedId),
+  //   sub_activity_name: formData.sub_activity_name,
+  //   sub_activity_description: formData.sub_activity_description,
+  //   // แปลงวันที่ให้เป็นฟอร์แมตที่ MySQL รองรับ (YYYY-MM-DD HH:MM:SS)
+  //   sub_activity_start: toSQLDatetimeFormat(formData.sub_activity_start), // ใช้เพื่อแปลงก่อนส่งไปฐานข้อมูล
+  //   sub_activity_end: toSQLDatetimeFormat(formData.sub_activity_end),
+  //   sub_activity_max: Number(formData.sub_activity_max),
+  //   sub_activity_point: Number(formData.sub_activity_point),
+  //   sub_activity_price: Number(formData.sub_activity_price),
+  //   mission_ids: Array.isArray(formData.mission_ids)
+  //     ? formData.mission_ids.map((id) => parseInt(id))
+  //     : [],
+
+  //   sub_activity_image: formData.sub_activity_image,
+  // };
 
   // _-----
   const onChange = (e) => {
@@ -83,9 +87,58 @@ function ActivityData() {
     }
   };
 
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    // setStateImagePreview(URL.createObjectURL(file));
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        sub_activity_image: file,
+        preview: URL.createObjectURL(file),
+      }));
+    }
+  };
+
   // /api/subActivity POST
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payloadSubactivity = new FormData();
+    payloadSubactivity.append("activity_id", parseInt(selectedId));
+    payloadSubactivity.append("sub_activity_name", formData.sub_activity_name);
+    payloadSubactivity.append(
+      "sub_activity_description",
+      formData.sub_activity_description
+    );
+    payloadSubactivity.append(
+      "sub_activity_start",
+      toSQLDatetimeFormat(formData.sub_activity_start)
+    );
+    payloadSubactivity.append(
+      "sub_activity_end",
+      toSQLDatetimeFormat(formData.sub_activity_end)
+    );
+    payloadSubactivity.append(
+      "sub_activity_max",
+      Number(formData.sub_activity_max)
+    );
+    payloadSubactivity.append(
+      "sub_activity_point",
+      Number(formData.sub_activity_point)
+    );
+    payloadSubactivity.append(
+      "sub_activity_price",
+      Number(formData.sub_activity_price)
+    );
+    payloadSubactivity.append(
+      "mission_ids",
+      Array.isArray(formData.mission_ids)
+        ? formData.mission_ids.map((id) => parseInt(id))
+        : []
+    );
+    payloadSubactivity.append(
+      "sub_activity_image",
+      formData.sub_activity_image
+    );
     try {
       console.log(payloadSubactivity);
       // console.log(selectedId);
@@ -152,9 +205,6 @@ function ActivityData() {
     setPage(1);
   };
 
-  {
-    // make btn confirm
-  }
   const handleDelete = async (id) => {
     try {
       const res = await axios.delete(`/api/activity/${id}`);
@@ -497,6 +547,34 @@ function ActivityData() {
                   value={formData.sub_activity_price}
                   name="sub_activity_price"
                 />
+              </label>
+            </div>
+
+            <div className="flex flex-col lg:flex-row gap-2">
+              <label className="w-full max-w-full">
+                เลือกรูปภาพ
+                <input
+                  required
+                  type="file"
+                  placeholder="ราคา"
+                  className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
+                  onChange={handleFile}
+                  name="sub_activity_image"
+                />
+              </label>
+              <label className="w-full max-w-full">
+                {formData.sub_activity_image
+                  ? "รูปภาพปัจจุบัน"
+                  : "ไม่มีรูปภาพปัจจุบัน"}
+                <br />
+
+                {formData.preview && (
+                  <img
+                    src={formData.preview}
+                    alt="preview"
+                    className="w-32 h-32 object-cover rounded-lg"
+                  />
+                )}
               </label>
             </div>
 

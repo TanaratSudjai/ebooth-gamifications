@@ -14,6 +14,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 import "../../../../utils/datepickerLocale";
+
 function page() {
   const router = useRouter();
   const params = useParams();
@@ -37,6 +38,8 @@ function page() {
     sub_activity_max: 1,
     sub_activity_point: 1,
     sub_activity_price: 1,
+    sub_activity_image: null,
+    preview: null,
   });
 
   const payloadSubactivity = {
@@ -48,6 +51,7 @@ function page() {
     sub_activity_max: Number(formData.sub_activity_max),
     sub_activity_point: Number(formData.sub_activity_point),
     sub_activity_price: Number(formData.sub_activity_price),
+    sub_activity_image: formData.sub_activity_image,
   };
 
   // call api to get data function
@@ -91,7 +95,17 @@ function page() {
   const fetchDataOil = async () => {
     try {
       const res_sub = await axios.get(`/api/subActivity/${selectedIdSub}`);
-      setFormData(res_sub.data);
+      
+      setFormData({
+        preview: res_sub.data.sub_activity_image,
+        sub_activity_name: res_sub.data.sub_activity_name,
+        sub_activity_description: res_sub.data.sub_activity_description,
+        sub_activity_start: res_sub.data.sub_activity_start,
+        sub_activity_end: res_sub.data.sub_activity_end,
+        sub_activity_max: res_sub.data.sub_activity_max,
+        sub_activity_point: res_sub.data.sub_activity_point,
+        sub_activity_price: res_sub.data.sub_activity_price,
+      });
       setLoading(false);
     } catch (err) {
       showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการดึงข้อมูล");
@@ -166,6 +180,17 @@ function page() {
       ...prev,
       [name]: type === "number" ? Number(value) : value,
     }));
+  };
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        sub_activity_image: file,
+        preview: URL.createObjectURL(file),
+      }));
+    }
   };
 
   return (
@@ -457,6 +482,34 @@ function page() {
                 name="sub_activity_price"
               />
             </label>
+
+            <div className="flex flex-col lg:flex-row gap-2">
+              <label className="w-full max-w-full">
+                เลือกรูปภาพ
+                <input
+                  required
+                  type="file"
+                  placeholder="ราคา"
+                  className="border border-gray-200 p-1 md:p-2 rounded-lg w-full"
+                  onChange={handleFile}
+                  name="sub_activity_image"
+                />
+              </label>
+              <label className="w-full max-w-full">
+                {formData.preview
+                  ? "รูปภาพปัจจุบัน"
+                  : "ไม่มีรูปภาพปัจจุบัน"}
+                <br />
+
+                {formData.preview && (
+                  <img
+                    src={formData.preview}
+                    alt="preview"
+                    className="w-32 h-32 object-cover rounded-lg"
+                  />
+                )}
+              </label>
+            </div>
 
             <button className="btn w-full mt-2" type="submit">
               บันทึก

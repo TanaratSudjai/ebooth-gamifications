@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, act } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import CommonTextHeaderView from "@/app/admin/components/Common/TextHeader/View";
@@ -8,6 +8,7 @@ import { toSQLDatetimeFormat } from "@/utils/formatdatelocal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../../../../utils/datepickerLocale";
+import Image from "next/image";
 function page() {
   const params = useParams();
   const router = useRouter();
@@ -20,7 +21,7 @@ function page() {
   const [submit, setSubmit] = useState(false);
   const { showSuccess, showError } = useAlert();
   const [ognId, setognId] = useState(0);
-
+  const [stateImagePreview, setStateImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     activity_name: "",
     activity_description: "",
@@ -31,6 +32,8 @@ function page() {
     organize_id: 0,
     activity_price: 0,
     mission_ids: [],
+    activity_image: "",
+    preview: null,
   });
 
   const handleChange = (e) => {
@@ -52,6 +55,18 @@ function page() {
       setFormData((prev) => ({
         ...prev,
         [name]: parsedValue,
+      }));
+    }
+  };
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    setStateImagePreview(URL.createObjectURL(file));
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        activity_image: file,
+        preview: URL.createObjectURL(file),
       }));
     }
   };
@@ -86,6 +101,8 @@ function page() {
           setFormData({
             ...data,
             mission_ids: missionIds,
+            preview: data.activity_image,
+            activity_image: data.activity_image,
           });
         }
       } catch (err) {
@@ -125,18 +142,42 @@ function page() {
     setLoading(true);
     setSubmit(true);
 
-    const activityData = {
-      ...formData,
-      activity_max: parseInt(formData.activity_max),
-      reward_points: parseInt(formData.reward_points),
-      organize_id: parseInt(formData.organize_id),
-      activity_price: parseInt(formData.activity_price),
-      activity_start: toSQLDatetimeFormat(formData.activity_start),
-      activity_end: toSQLDatetimeFormat(formData.activity_end),
-      mission_ids: Array.isArray(formData.mission_ids)
+    // const activityData = {
+    //   ...formData,
+    //   activity_max: parseInt(formData.activity_max),
+    //   reward_points: parseInt(formData.reward_points),
+    //   organize_id: parseInt(formData.organize_id),
+    //   activity_price: parseInt(formData.activity_price),
+    //   activity_start: toSQLDatetimeFormat(formData.activity_start),
+    //   activity_end: toSQLDatetimeFormat(formData.activity_end),
+    //   mission_ids: Array.isArray(formData.mission_ids)
+    //     ? formData.mission_ids.map((id) => parseInt(id))
+    //     : [],
+    //   activity_image: formData.activity_image,
+    // };
+
+    const activityData = new FormData();
+    activityData.append("activity_name", formData.activity_name);
+    activityData.append("activity_description", formData.activity_description);
+    activityData.append(
+      "activity_start",
+      toSQLDatetimeFormat(formData.activity_start)
+    );
+    activityData.append(
+      "activity_end",
+      toSQLDatetimeFormat(formData.activity_end)
+    );
+    activityData.append("activity_max", parseInt(formData.activity_max));
+    activityData.append("reward_points", parseInt(formData.reward_points));
+    activityData.append("organize_id", parseInt(formData.organize_id));
+    activityData.append("activity_price", parseInt(formData.activity_price));
+    activityData.append(
+      "mission_ids",
+      Array.isArray(formData.mission_ids)
         ? formData.mission_ids.map((id) => parseInt(id))
-        : [],
-    };
+        : []
+    );
+    activityData.append("activity_image", formData.activity_image);
 
     try {
       let response;
@@ -188,6 +229,8 @@ function page() {
       organize_id: 0,
       activity_price: 0,
       mission_ids: [],
+      activity_image: null,
+      preview: null,
     });
   };
 
@@ -215,6 +258,35 @@ function page() {
               onChange={handleChange}
               value={formData.activity_name}
             />
+          </div>
+          <div className="flex gap-2 flex-col-reverse md:flex-row ">
+            <div className="flex-1">
+              <label className="block mb-1">รูปภาพกิจกรรม</label>
+              <input
+                className="p-2 border border-gray-300 rounded-lg w-full"
+                type="file"
+                name="activity_image"
+                placeholder="รูปภาพกิจกรรม"
+                accept="image/*"
+                required
+                onChange={handleFile}
+              />
+            </div>
+            {/* image preview */}
+            <div className="w-full flex-1">
+              {formData.preview && (
+                <div className="rounded-2xl p-2 border-dashed border-2 border-gray-200">
+                  <label className="block mb-1">รูปภาพกิจกรรมที่เลือก</label>
+                  <img
+                    className="rounded-2xl object-contain max-w-full max-h-full"
+                    src={formData.preview || ""}
+                    width={300}
+                    height={300}
+                    alt="preview"
+                  />
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <label className="block mb-1">คำอธิบาย</label>
