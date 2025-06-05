@@ -69,15 +69,14 @@ function Page() {
                     className={`hover:shadow-xl transition duration-300 rounded-4xl shadow-2xl p-4 border-6 border-orange-400 h-[300px] relative overflow-hidden`}
                     style={{
                       backgroundImage: `url(${act.activity_image})`,
-                      backgroundSize: "cover", 
+                      backgroundSize: "cover",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
                       WebkitTextStroke: "1px #c67a4b",
                       textShadow: "2px 2px 0 red",
                     }}
                   >
-                    <div className="absolute inset-0 bg-black/30 z-0 rounded-4xl" />
-                    <span className="relative z-10 text-yellow-400 font-bold text-lg flex justify-center bg-[#fce04e] py-2 px-4 rounded-2xl border-4 border-orange-400 mt-2">
+                    <span className="relative z-10 top-[-20px] text-yellow-400 font-bold text-lg flex justify-center bg-[#fce04e] py-2 px-4 rounded-2xl border-4 border-orange-400 mt-2">
                       {act.activity_name}
                     </span>
                   </motion.div>
