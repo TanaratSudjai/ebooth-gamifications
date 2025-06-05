@@ -23,7 +23,6 @@ function ScanSuccess({ activityName }) {
 
 function Page() {
   const { data: session } = useSession();
-
   const [subActivities, setSubActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
