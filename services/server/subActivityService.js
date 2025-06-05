@@ -145,7 +145,7 @@ export const deleteSubActivity = async (id) => {
   }
 };
 
-export const updateSubActivity = async (data, params) => {
+export const updateSubActivity = async (params, data) => {
   try {
     const subActivitySchema = z.object({
       sub_activity_name: z.string().min(3, "subActivity name is too short"),
@@ -166,6 +166,21 @@ export const updateSubActivity = async (data, params) => {
       sub_activity_max: z.number().min(1, "Max member is required"),
       sub_activity_point: z.number().min(1, "Reward points is required"),
       sub_activity_price: z.number().min(0, "Price is required"),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
+      sub_activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const subActivityResult = subActivitySchema.safeParse(data);
@@ -185,11 +200,13 @@ export const updateSubActivity = async (data, params) => {
       sub_activity_max,
       sub_activity_point,
       sub_activity_price,
+      mission_ids,
+      sub_activity_image,
     } = subActivityResult.data;
     const id = params; // ใช้ id จาก params
 
-    await db.query(
-      "UPDATE sub_activity SET sub_activity_name = ?, activity_id = ?, sub_activity_description = ?, sub_activity_start = ?, sub_activity_end = ?, sub_activity_max = ?, sub_activity_point = ?, sub_activity_price = ? WHERE sub_activity_id = ?",
+    const [result] = await db.query(
+      "UPDATE sub_activity SET sub_activity_name = ?, activity_id = ?, sub_activity_description = ?, sub_activity_start = ?, sub_activity_end = ?, sub_activity_max = ?, sub_activity_point = ?, sub_activity_price = ?, sub_Activity_image = ? WHERE sub_activity_id = ?",
       [
         sub_activity_name,
         activity_id,
@@ -199,16 +216,56 @@ export const updateSubActivity = async (data, params) => {
         sub_activity_max,
         sub_activity_point,
         sub_activity_price,
+        sub_activity_image,
         id,
       ]
     );
+
+    // 1. Get existing mission_ids for this sub_activity
+    const [existingMissions] = await db.query(
+      "SELECT mission_id FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ?",
+      [activity_id, id]
+    );
+    const existingMissionIds = existingMissions.map((row) => row.mission_id);
+
+    // 2. Find missions to add and remove
+    const newMissionIds = mission_ids;
+    const missionsToAdd = newMissionIds.filter(
+      (id) => !existingMissionIds.includes(id)
+    );
+    const missionsToRemove = existingMissionIds.filter(
+      (id) => !newMissionIds.includes(id)
+    );
+
+    // 3. Delete removed missions
+    if (missionsToRemove.length > 0) {
+      await db.query(
+        `DELETE FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ? AND mission_id IN (${missionsToRemove
+          .map(() => "?")
+          .join(",")})`,
+        [activity_id, id, ...missionsToRemove]
+      );
+    }
+
+    // 4. Insert new missions
+    for (const mission_id of missionsToAdd) {
+      await db.query(
+        `INSERT INTO activity_mission (activity_id, mission_id, sub_activity_id) VALUES (?, ?, ?)`,
+        [activity_id, mission_id, id]
+      );
+    }
 
     const [updatedRows] = await db.query(
       "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
       [id]
     );
 
-    return updatedRows[0];
+    const [missionRows] = await db.query(
+      "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
+      [id]
+    );
+
+    return { mission: missionRows, subActivity: updatedRows[0] };
   } catch (error) {
     console.error("❌ updateSubActivity error:", error); // Log the error for debugging
     throw new Error("Failed to update subActivity"); // Throw a generic error message
