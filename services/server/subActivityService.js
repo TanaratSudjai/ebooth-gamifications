@@ -221,33 +221,32 @@ export const updateSubActivity = async (params, data) => {
       ]
     );
 
-    // 1. Get existing mission_ids for this sub_activity
+    // 1. Get current mission IDs for this sub-activity
     const [existingMissions] = await db.query(
       "SELECT mission_id FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ?",
       [activity_id, id]
     );
     const existingMissionIds = existingMissions.map((row) => row.mission_id);
 
-    // 2. Find missions to add and remove
+    // 2. Determine which missions to add and remove
     const newMissionIds = mission_ids;
     const missionsToAdd = newMissionIds.filter(
-      (id) => !existingMissionIds.includes(id)
+      (mid) => !existingMissionIds.includes(mid)
     );
     const missionsToRemove = existingMissionIds.filter(
-      (id) => !newMissionIds.includes(id)
+      (mid) => !newMissionIds.includes(mid)
     );
 
-    // 3. Delete removed missions
+    // 3. Remove unselected missions (ONLY if there are any)
     if (missionsToRemove.length > 0) {
+      const placeholders = missionsToRemove.map(() => "?").join(",");
       await db.query(
-        `DELETE FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ? AND mission_id IN (${missionsToRemove
-          .map(() => "?")
-          .join(",")})`,
+        `DELETE FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ? AND mission_id IN (${placeholders})`,
         [activity_id, id, ...missionsToRemove]
       );
     }
 
-    // 4. Insert new missions
+    // 4. Add new missions (ONLY if there are any)
     for (const mission_id of missionsToAdd) {
       await db.query(
         `INSERT INTO activity_mission (activity_id, mission_id, sub_activity_id) VALUES (?, ?, ?)`,
@@ -260,12 +259,7 @@ export const updateSubActivity = async (params, data) => {
       [id]
     );
 
-    const [missionRows] = await db.query(
-      "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
-      [id]
-    );
-
-    return { mission: missionRows, subActivity: updatedRows[0] };
+    return { subActivity: updatedRows[0], status: 200 };
   } catch (error) {
     console.error("❌ updateSubActivity error:", error); // Log the error for debugging
     throw new Error("Failed to update subActivity"); // Throw a generic error message

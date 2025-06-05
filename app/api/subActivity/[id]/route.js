@@ -27,22 +27,37 @@ export async function DELETE(req, { params }) {
     const subActivity = await getSubActivityById(id);
 
     const logoUrl = subActivity.qr_image_url;
-    
-    const r2Key = logoUrl?.split(process.env.R2_PUBLIC_URL + "/")[1];
-    
-    if (r2Key) {
-      await deleteFromR2(r2Key);
+    const imageUrl = subActivity.sub_activity_image;
+
+    // Extract keys from public R2 URLs
+    const r2PublicUrl = process.env.R2_PUBLIC_URL;
+    const logoKey = logoUrl?.startsWith(r2PublicUrl)
+      ? logoUrl.split(r2PublicUrl + "/")[1]
+      : null;
+    const imageKey = imageUrl?.startsWith(r2PublicUrl)
+      ? imageUrl.split(r2PublicUrl + "/")[1]
+      : null;
+
+    // Delete from R2 if keys exist
+    if (logoKey) {
+      await deleteFromR2(logoKey);
+    }
+    if (imageKey) {
+      await deleteFromR2(imageKey);
     }
 
     await deleteSubActivity(id);
+
     return NextResponse.json(
       { message: "SubActivity deleted successfully" },
       { status: 200 }
     );
   } catch (error) {
+    console.error("❌ DELETE error:", error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+
 
 // export async function PUT(req, { params }) {
 //   try {
