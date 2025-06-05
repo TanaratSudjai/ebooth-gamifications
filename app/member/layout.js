@@ -15,7 +15,7 @@ export default function MemberLayout({ children }) {
           <div className="flex flex-col min-h-screen relative">
             <Navbar />
             <MotionLayout>
-              <main className="flex-1 bg-white p-2 mb-24">{children}</main>
+              <main className="flex-1 bg-[#353e5d] p-2 mb-24">{children}</main>
             </MotionLayout>
             <Footer />
             <CartCountBadge />

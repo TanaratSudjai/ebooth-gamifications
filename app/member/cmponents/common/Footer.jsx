@@ -18,7 +18,7 @@ function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-white fixed bottom-0 left-0 right-0 shadow-lg z-50">
+    <footer className="bg-[#f3a037] text-white fixed bottom-0 left-0 right-0 shadow-lg z-50">
       <div className="flex justify-around items-center px-4 py-3 relative">
         {/* กิจกรรม */}
         <div
