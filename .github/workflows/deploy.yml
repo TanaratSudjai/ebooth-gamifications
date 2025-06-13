@@ -24,10 +24,13 @@ jobs:
       - name: Deploy on VPS via SSH
         run: |
           ssh xver@185.84.160.236 "
+            source ~/.nvm/nvm.sh &&
             cd /home/xver/eBooth/ebooth-gamifications &&
-            git pull origin main &&
+            git pull --no-rebase origin main &&
             npm install &&
             npm run build &&
             pm2 restart ebooth || pm2 start npm --name 'ebooth' -- run start
           "
         shell: bash
+
+
