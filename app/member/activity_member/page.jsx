@@ -7,9 +7,6 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 function Page() {
   const r = useRouter();
-
-  const { addToCart } = useCart();
-
   const { activity, loading } = useUserData();
   console.log(activity);
 
@@ -33,23 +30,27 @@ function Page() {
     >
       <div className="flex flex-col gap-4">
         <div className="w-full flex flex-col gap-2">
-          <input
+          {/* <input
             onChange={(e) => setSearchTerm(e.target.value)}
             type="text"
             placeholder="ค้นหากิจกรรมที่ต้องการเข้าร่วม"
-            className="w-full p-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all duration-200"
-          />
-          <span className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-1">
-            จำนวนกิจกรรมทั้งหมด:{" "}
-            <span className="text-amber-500 font-bold">
-              {activity?.length || 0}
-            </span>{" "}
-            รายการ
-          </span>
-        </div>
+            className="w-full p-3 bg-white rounded-3xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all duration-200"
+          /> */}
 
+          <div className="flex justify-center">
+            <span
+              style={{
+                WebkitTextStroke: "1.2px #c67a4b",
+                textShadow: "2px 2px 0 red",
+              }}
+              className="sticky w-full top-0 z-50 text-2xl font-extrabold text-yellow-400 bg-[#ffcb53] px-6 py-3 rounded-3xl shadow-lg inline-block text-center  tracking-wide"
+            >
+              กิจกรรมทั้งหมด
+            </span>
+          </div>
+        </div>
         {loading ? (
-          <div className="flex w-full justify-center items-center h-48 text-gray-500 animate-pulse">
+          <div className="flex mt-5 w-full justify-center items-center h-48 text-gray-500 animate-pulse">
             ⏳ กำลังโหลดข้อมูลกิจกรรมทั้งหมด...
           </div>
         ) : filteredActivities && filteredActivities.length > 0 ? (
@@ -65,10 +66,18 @@ function Page() {
                     onClick={() => {
                       handleActivity(act.activity_id);
                     }}
-                    className={`hover:shadow-xl transition duration-300 rounded-4xl shadow-2xl p-4 border-6 border-orange-400 h-[300px]`}
-                    style={{ backgroundImage: `url(${act.activity_image})` }}
+                    className={`hover:shadow-xl transition duration-300 rounded-4xl shadow-2xl p-4 border-6 border-orange-400 h-[300px] relative overflow-hidden`}
+                    style={{
+                      backgroundImage: `url(${act.activity_image})`,
+                      backgroundSize: "cover", 
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      WebkitTextStroke: "1px #c67a4b",
+                      textShadow: "2px 2px 0 red",
+                    }}
                   >
-                    <span className="text-stroke text-white font-bold text-lg relative z-0 top-[-35px] flex justify-center bg-amber-300 py-2 px-4 rounded-2xl border-4 border-orange-400 ">
+                    <div className="absolute inset-0 bg-black/30 z-0 rounded-4xl" />
+                    <span className="relative z-10 text-yellow-400 font-bold text-lg flex justify-center bg-[#fce04e] py-2 px-4 rounded-2xl border-4 border-orange-400 mt-2">
                       {act.activity_name}
                     </span>
                   </motion.div>
