@@ -30,11 +30,12 @@ jobs:
             cd /home/xver/eBooth/ebooth-gamifications &&
             git config pull.rebase false &&
             git pull origin main &&
-            npm install &&
-            npm run build &&
+            /home/xver/.nvm/versions/node/v22.16.0/bin/npm install &&
+            /home/xver/.nvm/versions/node/v22.16.0/bin/npm run build &&
             /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart ebooth || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
           "
         shell: bash
+
 
 
 
