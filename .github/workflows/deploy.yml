@@ -1,0 +1,33 @@
+name: Deploy Next.js to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 185.84.160.236 >> ~/.ssh/known_hosts
+        shell: bash
+
+      - name: Deploy on VPS via SSH
+        run: |
+          ssh xver@185.84.160.236 "
+            cd /home/xver/eBooth/ebooth-gamifications &&
+            git pull origin main &&
+            npm install &&
+            npm run build &&
+            pm2 restart ebooth || pm2 start npm --name 'ebooth' -- run start
+          "
+        shell: bash
