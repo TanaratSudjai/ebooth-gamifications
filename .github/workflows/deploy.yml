@@ -35,8 +35,3 @@ jobs:
             /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart ebooth || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
           "
         shell: bash
-
-
-
-
-
