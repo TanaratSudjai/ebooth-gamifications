@@ -24,6 +24,8 @@ jobs:
       - name: Deploy on VPS via SSH
         run: |
           ssh xver@185.84.160.236 "
+            git config --global user.email 'xver@example.com' &&
+            git config --global user.name 'xver' &&
             source ~/.nvm/nvm.sh &&
             cd /home/xver/eBooth/ebooth-gamifications &&
             git config pull.rebase false &&
@@ -33,6 +35,7 @@ jobs:
             /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart ebooth || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
           "
         shell: bash
+
 
 
 
