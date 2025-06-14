@@ -26,11 +26,9 @@ jobs:
           ssh xver@185.84.160.236 "
             source ~/.nvm/nvm.sh &&
             cd /home/xver/eBooth/ebooth-gamifications &&
-            git config pull.rebase false &&
-            git pull origin main &&
+            git pull --no-rebase origin main &&
             npm install &&
             npm run build &&
-            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 delete ebooth || true &&
-            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
+            pm2 restart ebooth || pm2 start npm --name 'ebooth' -- run start
           "
         shell: bash
