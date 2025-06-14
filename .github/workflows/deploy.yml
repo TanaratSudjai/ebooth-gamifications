@@ -38,10 +38,11 @@ jobs:
 
       - name: Extract and restart on VPS
         run: |
-          ssh xver@185.84.160.236 "
-            cd /home/xver/eBooth/ebooth-gamifications &&
-            tar -xzf build.tar.gz &&
-            rm -f build.tar.gz &&
-            npm install --omit=dev &&
-            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart 'ebooth' || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
-          "
+          ssh xver@185.84.160.236 '
+            export PATH="/home/xver/.nvm/versions/node/v22.16.0/bin:$PATH"
+            cd /home/xver/eBooth/ebooth-gamifications
+            npm install --omit=dev
+            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart "ebooth" || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name "ebooth" -- run start
+          '
+          
+
