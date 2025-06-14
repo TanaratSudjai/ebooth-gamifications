@@ -13,23 +13,35 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NODE_OPTIONS: "--max_old_space_size=2048"
+
+      - name: Archive production build
+        run: |
+          tar -czf build.tar.gz .next public package.json next.config.js
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 185.84.160.236 >> ~/.ssh/known_hosts
-        shell: bash
 
-      - name: Deploy on VPS via SSH
+      - name: Upload build to VPS
+        run: |
+          scp build.tar.gz xver@185.84.160.236:/home/xver/eBooth/ebooth-gamifications/
+
+      - name: Extract and restart on VPS
         run: |
           ssh xver@185.84.160.236 "
-            source ~/.nvm/nvm.sh &&
             cd /home/xver/eBooth/ebooth-gamifications &&
-            git config pull.rebase false &&
-            git pull origin main &&
-            npm install &&
-            npm run build &&
-            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
+            tar -xzf build.tar.gz &&
+            rm -f build.tar.gz &&
+            npm install --omit=dev &&
+            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart 'ebooth' || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name 'ebooth' -- run start
           "
-        shell: bash
