@@ -23,7 +23,7 @@ jobs:
 
       - name: Archive production build
         run: |
-          tar -czf build.tar.gz .next public package.json next.config.js
+          tar -czf build.tar.gz .next public package.json next.config.mjs
 
       - name: Setup SSH key
         run: |
