@@ -53,46 +53,57 @@ function page() {
       >
         {main ? (
           <motion.div
+            className=""
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 0, x: -30 }}
             transition={{ duration: 0.4 }}
-            className="p-4 border-2 border-gray-800 rounded-sm shadow-md text-white bg-gray-800 space-y-2"
           >
-            <div className="flex justify-between  gap-4">
-              <div className="flex flex-col gap-1 ">
-                <div>
-                  <span className="font-semibold text-orange-400 w-40">
-                    ชื่อกิจกรรม:
-                  </span>{" "}
-                  {main.activity_name}
+            <div
+              style={{
+                backgroundImage: `url(${main.activity_image})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+              className="p-4 h-[300px]  rounded-sm shadow-md text-white bg-gray-800 space-y-2"
+            ></div>
+            <div className="p-4 ">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1 ">
+                  <div className="flex justify-between">
+                    <div className="">
+                      <span className="font-semibold text-orange-400 w-40">
+                        ชื่อกิจกรรม:
+                      </span>{" "}
+                      {main.activity_name}
+                    </div>
+                    <button
+                      onClick={() => addToCart(main)}
+                      className="cursor-pointer bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-xl"
+                    >
+                      เข้าร่วม
+                    </button>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-orange-400 w-40">
+                      รายละเอียด: <br />
+                    </span>{" "}
+                    {main.activity_description}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-orange-400 w-40">
+                      จำนวนรับ:
+                    </span>{" "}
+                    {main.activity_max}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-orange-400 w-40">
+                      วันที่เริ่ม:
+                    </span>{" "}
+                    {formatDateToThaiBE(main.activity_start)}
+                  </div>
                 </div>
-                <div>
-                  <span className="font-semibold text-orange-400 w-40">
-                    รายละเอียด:
-                  </span>{" "}
-                  {main.activity_description}
-                </div>
-                <div>
-                  <span className="font-semibold text-orange-400 w-40">
-                    จำนวนรับ:
-                  </span>{" "}
-                  {main.activity_max}
-                </div>
-                <div>
-                  <span className="font-semibold text-orange-400 w-40">
-                    วันที่เริ่ม:
-                  </span>{" "}
-                  {formatDateToThaiBE(main.activity_start)}
-                </div>
-              </div>
-              <div className="">
-                <button
-                  onClick={() => addToCart(main)}
-                  className="cursor-pointer bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-xl"
-                >
-                  เข้าร่วม
-                </button>
               </div>
             </div>
           </motion.div>
@@ -107,14 +118,11 @@ function page() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 0, x: -30 }}
         transition={{ duration: 0.4 }}
-        className="grid grid-cols-1 mt-2 gap-2"
+        className="grid grid-cols-1 mt-2 gap-2 mb-15"
       >
         {subactivity && Array.isArray(subactivity) ? (
           subactivity.map((sub, index) => {
-            if (
-              sub.sub_activity_max > 0 &&
-              cart.some((item) => item.activity_id === main.activity_id)
-            ) {
+            if (sub.sub_activity_max > 0) {
               return (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -122,9 +130,18 @@ function page() {
                   exit={{ opacity: 0, y: 0, x: -30 }}
                   transition={{ duration: 0.4 }}
                   key={index}
-                  className="p-3  rounded-lg shadow"
+                  className="rounded-md shadow-md"
                 >
-                  <div className="flex gap-2 justify-between">
+                  <div className="flex flex-col gap-2 justify-between bg-white p-2 rounded-md ">
+                    <div
+                      style={{
+                        backgroundImage: `url(${sub.sub_activity_image})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }}
+                      className="p-3 h-[150px] rounded-md "
+                    ></div>
                     <div className="flex flex-col gap-2">
                       <div className="font-semibold text-orange-400">
                         Subactivity Name:

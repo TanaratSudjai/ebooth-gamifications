@@ -1,6 +1,9 @@
 import db from "./db"; // ใช้ mysql2/promise connection
 import { z } from "zod"; // ใช้สำหรับการตรวจสอบข้อมูล
-
+const path = require("path"); // เพิ่มการ require โมดูล path
+const fs = require("fs");
+const QRCode = require("qrcode"); // โมดูลสำหรับการสร้าง QR Code
+import { uploadQR } from "@/utils/uploadQR"; // โมดูลสำหรับการอัปโหลด QR Code ไปยัง Cloudflare R2
 export const createActivity = async (data) => {
   try {
     const activitySchema = z.object({
@@ -25,6 +28,18 @@ export const createActivity = async (data) => {
       mission_ids: z.array(
         z.number().int().positive("required sub activity id")
       ),
+      activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const activityResult = activitySchema.safeParse(data);
@@ -45,6 +60,7 @@ export const createActivity = async (data) => {
       organize_id,
       activity_price,
       mission_ids,
+      activity_image,
     } = activityResult.data;
 
     let is_multi_day;
@@ -63,8 +79,8 @@ export const createActivity = async (data) => {
 
     const [result] = await db.query(
       `INSERT INTO activity (
-          activity_name, activity_description, activity_start, activity_end, activity_max, reward_points, is_multi_day, organize_id, activity_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          activity_name, activity_description, activity_start, activity_end, activity_max, reward_points, is_multi_day, organize_id, activity_price, activity_image
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         activity_name,
         activity_description,
@@ -75,6 +91,7 @@ export const createActivity = async (data) => {
         is_multi_day,
         organize_id,
         activity_price,
+        activity_image,
       ]
     );
 
@@ -86,6 +103,20 @@ export const createActivity = async (data) => {
         [activityId, mission_id]
       );
     }
+
+    // ✅ Generate QR Code Buffer
+      const qrData = `main,${activityId}`;
+      const qrBuffer = await QRCode.toBuffer(qrData);
+    
+        // ✅ Upload to Cloudflare R2
+      const r2Key = `qrcode/${activityId}.png`;
+      const qrImageUrl = await uploadQR(qrBuffer, r2Key); // ⬅️ Returns public R2 URL
+    
+        // ✅ Store R2 public URL
+        await db.query(
+          `UPDATE activity SET qr_activity_image_url = ? WHERE activity_id = ?`,
+          [qrImageUrl, activityId]
+        );
 
     const [newActivityRows] = await db.query(
       "SELECT * FROM activity WHERE activity_id = ?",
@@ -140,7 +171,7 @@ export const deleteActivity = async (id) => {
   }
 };
 
-export const updateActivity = async (data, params) => {
+export const updateActivity = async (params,data) => {
   try {
     const activitySchema = z.object({
       activity_name: z.string().min(3, "activity name is too short"),
@@ -165,6 +196,21 @@ export const updateActivity = async (data, params) => {
         .optional(),
       organize_id: z.number().min(1, "Organize ID is required"),
       activity_price: z.number().min(0, "Price is required"),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
+      activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const activityResult = activitySchema.safeParse(data);
@@ -185,11 +231,13 @@ export const updateActivity = async (data, params) => {
       is_multi_day,
       organize_id,
       activity_price,
+      mission_ids,
+      activity_image,
     } = activityResult.data;
     const id = params; // ใช้ id จาก params
 
     await db.query(
-      "UPDATE activity SET activity_name = ?, activity_description = ?, activity_start = ?, activity_end = ?, activity_max = ?, reward_points = ?, is_multi_day = ?, organize_id = ?, activity_price = ? WHERE activity_id = ?",
+      "UPDATE activity SET activity_name = ?, activity_description = ?, activity_start = ?, activity_end = ?, activity_max = ?, reward_points = ?, is_multi_day = ?, organize_id = ?, activity_price = ? ,activity_image = ? WHERE activity_id = ?",
       [
         activity_name,
         activity_description,
@@ -200,9 +248,44 @@ export const updateActivity = async (data, params) => {
         is_multi_day,
         organize_id,
         activity_price,
+        activity_image,
         id,
+        
       ]
     );
+
+    // 1. Get current mission IDs for this sub-activity
+    const [existingMissions] = await db.query(
+      "SELECT mission_id FROM activity_mission WHERE activity_id = ? AND sub_activity_id IS NULL",
+      [id]
+    );
+    const existingMissionIds = existingMissions.map((row) => row.mission_id);
+
+    // 2. Determine which missions to add and remove
+    const newMissionIds = mission_ids;
+    const missionsToAdd = newMissionIds.filter(
+      (mid) => !existingMissionIds.includes(mid)
+    );
+    const missionsToRemove = existingMissionIds.filter(
+      (mid) => !newMissionIds.includes(mid)
+    );
+
+    // 3. Remove unselected missions (ONLY if there are any)
+    if (missionsToRemove.length > 0) {
+      const placeholders = missionsToRemove.map(() => "?").join(",");
+      await db.query(
+        `DELETE FROM activity_mission WHERE activity_id = ? AND sub_activity_id IS NULL AND mission_id IN (${placeholders})`,
+        [id, ...missionsToRemove]
+      );
+    }
+
+    // 4. Add new missions (ONLY if there are any)
+    for (const mission_id of missionsToAdd) {
+      await db.query(
+        `INSERT INTO activity_mission (activity_id, mission_id) VALUES (?, ?)`,
+        [id, mission_id ]
+      );
+    }
 
     const [updatedRows] = await db.query(
       "SELECT * FROM activity WHERE activity_id = ?",
