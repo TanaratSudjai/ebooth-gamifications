@@ -16,15 +16,13 @@ jobs:
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env.production
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.production
           echo "DB_PASS=${{ secrets.DB_PASS }}" >> .env.production
-
+          echo "NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}" >> .env.production
           echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.production
-
           echo "R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}" >> .env.production
           echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env.production
           echo "R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}" >> .env.production
           echo "R2_BUCKET=${{ secrets.R2_BUCKET }}" >> .env.production
           echo "R2_PUBLIC_URL=${{ secrets.R2_PUBLIC_URL }}" >> .env.production
-
           echo "NEXT_PUBLIC_PROMPT_PAY_MOBILE=${{ secrets.NEXT_PUBLIC_PROMPT_PAY_MOBILE }}" >> .env.production
 
       - name: Build Next.js
