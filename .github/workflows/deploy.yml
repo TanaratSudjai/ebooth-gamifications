@@ -1,10 +1,3 @@
-name: Deploy Next.js to VPS
-
-on:
-  push:
-    branches:
-      - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,6 +9,24 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create .env.production
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.production
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env.production
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.production
+          echo "DB_PASS=${{ secrets.DB_PASS }}" >> .env.production
+
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.production
+
+          echo "R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}" >> .env.production
+          echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env.production
+          echo "R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}" >> .env.production
+          echo "R2_BUCKET=${{ secrets.R2_BUCKET }}" >> .env.production
+          echo "R2_PUBLIC_URL=${{ secrets.R2_PUBLIC_URL }}" >> .env.production
+
+          echo "NEXT_PUBLIC_PROMPT_PAY_MOBILE=${{ secrets.NEXT_PUBLIC_PROMPT_PAY_MOBILE }}" >> .env.production
+
       - name: Build Next.js
         run: npm run build
         env:
@@ -23,7 +34,7 @@ jobs:
 
       - name: Archive production build
         run: |
-          tar -czf build.tar.gz .next public package.json next.config.mjs
+          tar -czf build.tar.gz .next public package.json next.config.mjs .env.production
 
       - name: Setup SSH key
         run: |
@@ -41,8 +52,7 @@ jobs:
           ssh xver@185.84.160.236 '
             export PATH="/home/xver/.nvm/versions/node/v22.16.0/bin:$PATH"
             cd /home/xver/eBooth/ebooth-gamifications
+            tar -xzf build.tar.gz
             npm install --omit=dev
-            /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 restart "ebooth" || /home/xver/.nvm/versions/node/v22.16.0/bin/pm2 start npm --name "ebooth" -- run start
+            pm2 restart "ebooth" || pm2 start npm --name "ebooth" -- run start
           '
-          
-
