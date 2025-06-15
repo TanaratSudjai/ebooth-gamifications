@@ -12,10 +12,10 @@ export default function MemberLayout({ children }) {
     <AlertProvider>
       <UserDataProvider>
         <CartProvider>
-          <div className="flex flex-col min-h-screen relative">
+          <div className="flex flex-col min-h-screen bg-gray-100">
             <Navbar />
             <MotionLayout>
-              <main className="flex-1 bg-[#353e5d] p-2 mb-24">{children}</main>
+              <main className="p-2 min-h-screen bg-white">{children}</main>
             </MotionLayout>
             <Footer />
             <CartCountBadge />

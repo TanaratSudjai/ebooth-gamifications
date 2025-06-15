@@ -5,6 +5,7 @@ import { formatDateToThaiBE } from "@/utils/formatdatelocal";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import Image from "next/image";
 function Page() {
   const r = useRouter();
   const { activity, loading } = useUserData();
@@ -26,27 +27,16 @@ function Page() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 0, x: -30 }}
       transition={{ duration: 0.4 }}
-      className="container mx-auto px-4 py-6"
+      className="container mx-auto "
     >
       <div className="flex flex-col gap-4">
         <div className="w-full flex flex-col gap-2">
-          {/* <input
-            onChange={(e) => setSearchTerm(e.target.value)}
-            type="text"
-            placeholder="ค้นหากิจกรรมที่ต้องการเข้าร่วม"
-            className="w-full p-3 bg-white rounded-3xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all duration-200"
-          /> */}
-
           <div className="flex justify-center">
-            <span
-              style={{
-                WebkitTextStroke: "1.2px #c67a4b",
-                textShadow: "2px 2px 0 red",
-              }}
-              className="sticky w-full top-0 z-50 text-2xl font-extrabold text-yellow-400 bg-[#ffcb53] px-6 py-3 rounded-3xl shadow-lg inline-block text-center  tracking-wide"
-            >
-              กิจกรรมทั้งหมด
-            </span>
+            <div className="w-full bg-gray-200/60 shadow-2xl rounded-full p-2 flex items-center gap-2 border-2 border-white backdrop-blur-md ">
+              <div className="w-full text-center font-bold text-gray-700">
+                กิจกรรมทั้งหมด
+              </div>
+            </div>
           </div>
         </div>
         {loading ? (
@@ -66,19 +56,28 @@ function Page() {
                     onClick={() => {
                       handleActivity(act.activity_id);
                     }}
-                    className={`hover:shadow-xl transition duration-300 rounded-4xl shadow-2xl p-4 border-6 border-orange-400 h-[300px] relative overflow-hidden`}
-                    style={{
-                      backgroundImage: `url(${act.activity_image})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                      WebkitTextStroke: "1px #c67a4b",
-                      textShadow: "2px 2px 0 red",
-                    }}
+                    className={`hover:shadow-xl bg-gray-200/20 transition duration-300 rounded-2xl border-3 border-white shadow-2xl relative overflow-hidden`}
                   >
-                    <span className="relative z-10 top-[-20px] text-yellow-400 font-bold text-lg flex justify-center bg-[#fce04e] py-2 px-4 rounded-2xl border-4 border-orange-400 mt-2">
-                      {act.activity_name}
-                    </span>
+                    <div className="flex justify-between">
+                      <div className=" bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-sm font-semibold text-gray-700 flex flex-col gap-1">
+                        <span>{act.activity_name}</span>
+                        <span>
+                          {act.activity_price > 0
+                            ? `${act.activity_price} บาท`
+                            : "ไม่มีค่าใช้จ่าย"}
+                        </span>
+                      </div>
+                      <div className=" bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-sm font-semibold text-gray-700">
+                        {formatDateToThaiBE(act.activity_start)}
+                      </div>
+                    </div>
+                    <Image
+                      src={act.activity_image}
+                      alt={act.activity_name}
+                      width={500}
+                      height={500}
+                      className="w-full h-auto object-cover rounded-xl"
+                    />
                   </motion.div>
                 )
             )}
