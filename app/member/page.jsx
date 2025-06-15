@@ -164,7 +164,7 @@ function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-100 text-gray-800 p-4 sm:p-6">
+    <div className=" text-gray-800 p-4 sm:p-6">
       <div className="container mx-auto max-w-2xl space-y-8">
         <h1 className="text-2xl font-semibold text-center text-indigo-800">
           ระบบสแกน QR เพื่อเช็คชื่อ

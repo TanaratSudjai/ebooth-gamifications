@@ -26,7 +26,21 @@ export const createSubActivity = async (data) => {
       sub_activity_max: z.number().min(1, "Max member is required"),
       sub_activity_point: z.number().min(1, "Reward points is required"),
       sub_activity_price: z.number().min(0, "Price is required"),
-      mission_ids: z.array(z.number().int().positive("required sub activity id")),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
+      sub_activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const subActivityResult = subActivitySchema.safeParse(data);
@@ -45,13 +59,16 @@ export const createSubActivity = async (data) => {
       sub_activity_point,
       sub_activity_price,
       mission_ids,
+      sub_activity_image,
     } = subActivityResult.data;
 
     const [result] = await db.query(
       `INSERT INTO sub_activity (
+        sub_activity_image,
         sub_activity_name, activity_id, sub_activity_description, sub_activity_start, sub_activity_end, sub_activity_max, sub_activity_point, sub_activity_price
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        sub_activity_image,
         sub_activity_name,
         activity_id,
         sub_activity_description,
@@ -101,7 +118,6 @@ export const createSubActivity = async (data) => {
   }
 };
 
-
 export const getSubActivityById = async (id) => {
   try {
     const [rows] = await db.query(
@@ -129,7 +145,7 @@ export const deleteSubActivity = async (id) => {
   }
 };
 
-export const updateSubActivity = async (data, params) => {
+export const updateSubActivity = async (params, data) => {
   try {
     const subActivitySchema = z.object({
       sub_activity_name: z.string().min(3, "subActivity name is too short"),
@@ -150,6 +166,21 @@ export const updateSubActivity = async (data, params) => {
       sub_activity_max: z.number().min(1, "Max member is required"),
       sub_activity_point: z.number().min(1, "Reward points is required"),
       sub_activity_price: z.number().min(0, "Price is required"),
+      mission_ids: z.array(
+        z.number().int().positive("required sub activity id")
+      ),
+      sub_activity_image: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith("https://") &&
+            (val.endsWith(".png") ||
+              val.endsWith(".jpg") ||
+              val.endsWith(".jpeg")),
+          {
+            message: "Invalid image file path",
+          }
+        ),
     });
 
     const subActivityResult = subActivitySchema.safeParse(data);
@@ -169,11 +200,13 @@ export const updateSubActivity = async (data, params) => {
       sub_activity_max,
       sub_activity_point,
       sub_activity_price,
+      mission_ids,
+      sub_activity_image,
     } = subActivityResult.data;
     const id = params; // ใช้ id จาก params
 
-    await db.query(
-      "UPDATE sub_activity SET sub_activity_name = ?, activity_id = ?, sub_activity_description = ?, sub_activity_start = ?, sub_activity_end = ?, sub_activity_max = ?, sub_activity_point = ?, sub_activity_price = ? WHERE sub_activity_id = ?",
+    const [result] = await db.query(
+      "UPDATE sub_activity SET sub_activity_name = ?, activity_id = ?, sub_activity_description = ?, sub_activity_start = ?, sub_activity_end = ?, sub_activity_max = ?, sub_activity_point = ?, sub_activity_price = ?, sub_Activity_image = ? WHERE sub_activity_id = ?",
       [
         sub_activity_name,
         activity_id,
@@ -183,16 +216,50 @@ export const updateSubActivity = async (data, params) => {
         sub_activity_max,
         sub_activity_point,
         sub_activity_price,
+        sub_activity_image,
         id,
       ]
     );
+
+    // 1. Get current mission IDs for this sub-activity
+    const [existingMissions] = await db.query(
+      "SELECT mission_id FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ?",
+      [activity_id, id]
+    );
+    const existingMissionIds = existingMissions.map((row) => row.mission_id);
+
+    // 2. Determine which missions to add and remove
+    const newMissionIds = mission_ids;
+    const missionsToAdd = newMissionIds.filter(
+      (mid) => !existingMissionIds.includes(mid)
+    );
+    const missionsToRemove = existingMissionIds.filter(
+      (mid) => !newMissionIds.includes(mid)
+    );
+
+    // 3. Remove unselected missions (ONLY if there are any)
+    if (missionsToRemove.length > 0) {
+      const placeholders = missionsToRemove.map(() => "?").join(",");
+      await db.query(
+        `DELETE FROM activity_mission WHERE activity_id = ? AND sub_activity_id = ? AND mission_id IN (${placeholders})`,
+        [activity_id, id, ...missionsToRemove]
+      );
+    }
+
+    // 4. Add new missions (ONLY if there are any)
+    for (const mission_id of missionsToAdd) {
+      await db.query(
+        `INSERT INTO activity_mission (activity_id, mission_id, sub_activity_id) VALUES (?, ?, ?)`,
+        [activity_id, mission_id, id]
+      );
+    }
 
     const [updatedRows] = await db.query(
       "SELECT * FROM sub_activity WHERE sub_activity_id = ?",
       [id]
     );
 
-    return updatedRows[0];
+    return { subActivity: updatedRows[0], status: 200 };
   } catch (error) {
     console.error("❌ updateSubActivity error:", error); // Log the error for debugging
     throw new Error("Failed to update subActivity"); // Throw a generic error message
@@ -220,7 +287,7 @@ export const checkin = async (data) => {
       [sub_activity_id, member_id, activity_id]
     );
 
-    if (checkActivityRows.length > 0){
+    if (checkActivityRows.length > 0) {
       return { message: "already checkin", status: 400 };
     }
 
@@ -236,10 +303,10 @@ export const checkin = async (data) => {
       );
 
       const [getActivityRewardPoint] = await db.query(
-            `SELECT reward_points FROM activity JOIN checkin on activity.activity_id = checkin.activity_id 
+        `SELECT reward_points FROM activity JOIN checkin on activity.activity_id = checkin.activity_id 
             WHERE activity.activity_id = ? AND is_checkin = 0`,
-            [activity_id]
-          );
+        [activity_id]
+      );
 
       await db.query(
         "UPDATE checkin SET is_checkin = 1 WHERE member_id = ? AND activity_id = ?",
@@ -247,21 +314,22 @@ export const checkin = async (data) => {
       );
 
       const [getSubActivityRewardPoint] = await db.query(
-            `SELECT sub_activity_point FROM sub_activity WHERE sub_activity_id = ?`,
-            [sub_activity_id]
-          );  
-        
-      const subActivityPoint = getSubActivityRewardPoint[0].sub_activity_point || 0
-      const activityPoint = getActivityRewardPoint[0].reward_points || 0
+        `SELECT sub_activity_point FROM sub_activity WHERE sub_activity_id = ?`,
+        [sub_activity_id]
+      );
+
+      const subActivityPoint =
+        getSubActivityRewardPoint[0].sub_activity_point || 0;
+      const activityPoint = getActivityRewardPoint[0].reward_points || 0;
 
       await db.query(
-      `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
-      [
-        subActivityPoint + activityPoint,
-        subActivityPoint + activityPoint,
-        member_id,
-      ]
-    );
+        `UPDATE member SET member_point_total = member_point_total + ?, member_point_remain = member_point_remain + ? WHERE member_id = ?`,
+        [
+          subActivityPoint + activityPoint,
+          subActivityPoint + activityPoint,
+          member_id,
+        ]
+      );
 
       return { message: "Check-in updated successfully", status: 200 };
     }
@@ -296,4 +364,3 @@ export const checkin = async (data) => {
     return "Check-in failed: " + error.message;
   }
 };
-
