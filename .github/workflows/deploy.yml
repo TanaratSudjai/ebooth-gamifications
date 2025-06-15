@@ -42,14 +42,16 @@ jobs:
 
       - name: Upload build to VPS
         run: |
-          scp build.tar.gz xver@185.84.160.236:/home/xver/eBooth/ebooth-gamifications/
+          rsync -avz --delete build.tar.gz xver@185.84.160.236:/home/xver/eBooth/ebooth-gamifications/
 
       - name: Extract and restart on VPS
         run: |
           ssh xver@185.84.160.236 '
             export PATH="/home/xver/.nvm/versions/node/v22.16.0/bin:$PATH"
             cd /home/xver/eBooth/ebooth-gamifications
+            rm -rf .next
             tar -xzf build.tar.gz
             npm install --omit=dev
             pm2 restart "ebooth" || pm2 start npm --name "ebooth" -- run start
           '
+
