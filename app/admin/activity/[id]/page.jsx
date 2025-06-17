@@ -201,7 +201,9 @@ function page() {
           showError("เกิดข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
         }
       } else {
-        response = await axios.put(`/api/activity/${activityId}`, activityData);
+        response = await axios.put(`/api/activity/${activityId}`, activityData,{
+          maxBodyLength: Infinity,
+        });
         if (response.status === 200) {
           showSuccess("ทำรายการสำเร็จ", "สร้างกิจกรรมสําเร็จ");
           router.push("/admin/activity");
