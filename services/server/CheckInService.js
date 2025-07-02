@@ -564,10 +564,17 @@ export const updateIsCheckInONSubActivity = async (data) => {
           member_id,
         ]
       );
-      const [getMember] = await db.query(
-        `SELECT member_point_total, member_point_remain FROM member WHERE member_id = ?`,
-        [member_id]
-      );
+      // const [getMember] = await db.query(
+      //   `SELECT member_point_total, member_point_remain FROM member WHERE member_id = ?`,
+      //   [member_id]
+      // );
+
+      await db.query(`INSERT INTO point (member_id, activity_id, sub_activity_id, point_earned , point_created) values (?, ?, ?, ?, NOW())`, [
+        member_id,
+        activity_id,
+        sub_activity_id,
+        getRewardPoint[0].sub_activity_point,
+      ]);
     }
 
     return { message: "Check-in statuses updated successfully", status: 200 };
