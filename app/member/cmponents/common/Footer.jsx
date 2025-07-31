@@ -30,7 +30,23 @@ function Footer() {
             )}`}
           >
             <Image
-              src={"/member_icons/activityy.png"}
+              src={"/member_icons/activity.png"}
+              alt="กิจกรรม"
+              width={50}
+              height={50}
+            />
+          </div>
+        </div>
+        {/* กิจกรรม */}
+        <div className="w-full text-center">
+          <div
+            onClick={() => handleClick("renderboard")}
+            className={`flex justify-center  transition-all duration-300 cursor-pointer transform ${isActive(
+              "renderboard"
+            )}`}
+          >
+            <Image
+              src={"/member_icons/rank.png"}
               alt="กิจกรรม"
               width={50}
               height={50}

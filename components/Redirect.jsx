@@ -18,7 +18,7 @@ export default function RedirectAfterLogin() {
         } else {
           router.replace("/member");
         }
-      }, 1500);
+      }, 500);
       return () => clearTimeout(timer);
     } else if (status === "unauthenticated") {
       const timer = setTimeout(() => {

@@ -78,9 +78,8 @@ function Page() {
     }
   };
 
-  useEffect(() => {
-    sendCheckIn();
-  }, [form, subActivities]);
+
+
 
   const startScan = () => {
     if (scanning) return;
@@ -103,13 +102,15 @@ function Page() {
         );
         const selectedDeviceId = backCamera?.id || devices[0].id;
 
-        const scanner = new Html5Qrcode("qr-reader", {
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true,
-          },
-        });
+        if (!scannerRef.current) {
+          const scanner = new Html5Qrcode("qr-reader", {
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true,
+            },
+          });
+          scannerRef.current = scanner;
+        }
 
-        scannerRef.current = scanner;
 
         scanner.start(
           { deviceId: { exact: selectedDeviceId } },
@@ -150,6 +151,8 @@ function Page() {
       });
   };
 
+
+
   const stopScan = async () => {
     if (scannerRef.current) {
       try {
@@ -163,9 +166,40 @@ function Page() {
     }
   };
 
+  useEffect(() => {
+    if (
+      form.activity_id &&
+      form.sub_activity_id &&
+      form.member_id &&
+      subActivities.length > 0
+    ) {
+      sendCheckIn();
+      setTimeout(() => {
+        setScanSuccess(false);
+        setForm({
+          activity_id: "",
+          sub_activity_id: "",
+          member_id: "",
+        });
+      }, 3000);
+    }
+  }, [form]);
+
+
+
+
+  // ------------------------------------------------------------------
+  const userPoints = 880; // แต้มปัจจุบัน (mock)
+
+  const rewards = [
+    { points: 500, reward: "🎁 ได้รับตุ๊กตา" },
+    { points: 1000, reward: "🛏️ ได้รับหมอน" },
+    { points: 1500, reward: "🏅 ได้รับทองคำ" }
+  ];
+  // ------------------------------------------------------------------
   return (
-    <div className=" text-gray-800 p-4 sm:p-6">
-      <div className="container mx-auto max-w-2xl space-y-8">
+    <div className=" text-gray-800 p-4 sm:p-6 grid grid-cols-1 gap-4">
+      <div className="container mx-auto  space-y-8 border border-gray-200  rounded-lg p-4 bg-white ">
         <h1 className="text-2xl font-semibold text-center text-indigo-800">
           ระบบสแกน QR เพื่อเช็คชื่อ
         </h1>
@@ -176,11 +210,11 @@ function Page() {
           </div>
         )}
 
-        <div className="flex-1">
+        <div className="flex-1 justify-center items-center flex flex-col space-y-4">
           <button
             onClick={startScan}
             disabled={scanning}
-            className="bg-indigo-600 text-white px-6 py-2 w-full rounded-md shadow-md hover:bg-indigo-700 transition disabled:opacity-50"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-md shadow-md hover:bg-indigo-700 transition disabled:opacity-50"
           >
             {scanning ? "กำลังสแกน..." : "เริ่มสแกน QR"}
           </button>
@@ -223,6 +257,39 @@ function Page() {
             </p>
           </div>
         )}
+      </div>
+
+      <div className="tracking border border-gray-200 p-4 rounded space-y-4">
+        <div className="text-gray-800 font-semibold">
+          ความคืบหน้าของการเข้าร่วมกิจกรรม
+        </div>
+
+        {rewards.map((item, index) => {
+          const isReached = userPoints >= item.points;
+
+          return (
+            <div
+              key={index}
+              className={`border rounded p-3 flex items-center justify-between ${isReached ? 'bg-green-100 border-green-300' : 'bg-white'
+                }`}
+            >
+              <div className="flex items-center space-x-2">
+                <div className="text-2xl">{isReached ? '✅' : '⬜'}</div>
+                <div>
+                  <div className="font-medium text-gray-700">
+                    {item.reward}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    ครบ {item.points} แต้ม
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm font-bold text-gray-600">
+                {userPoints}/{item.points}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
