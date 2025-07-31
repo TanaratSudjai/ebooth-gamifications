@@ -78,9 +78,6 @@ function Page() {
     }
   };
 
-
-
-
   const startScan = () => {
     if (scanning) return;
     setScanning(true);
