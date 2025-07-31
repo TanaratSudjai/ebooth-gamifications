@@ -78,9 +78,8 @@ function Page() {
     }
   };
 
-  useEffect(() => {
-    sendCheckIn();
-  }, [form, subActivities]);
+
+
 
   const startScan = () => {
     if (scanning) return;
@@ -103,13 +102,15 @@ function Page() {
         );
         const selectedDeviceId = backCamera?.id || devices[0].id;
 
-        const scanner = new Html5Qrcode("qr-reader", {
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true,
-          },
-        });
+        if (!scannerRef.current) {
+          const scanner = new Html5Qrcode("qr-reader", {
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true,
+            },
+          });
+          scannerRef.current = scanner;
+        }
 
-        scannerRef.current = scanner;
 
         scanner.start(
           { deviceId: { exact: selectedDeviceId } },
@@ -150,6 +151,8 @@ function Page() {
       });
   };
 
+
+
   const stopScan = async () => {
     if (scannerRef.current) {
       try {
@@ -162,6 +165,28 @@ function Page() {
       setScanning(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      form.activity_id &&
+      form.sub_activity_id &&
+      form.member_id &&
+      subActivities.length > 0
+    ) {
+      sendCheckIn();
+      setTimeout(() => {
+        setScanSuccess(false);
+        setForm({
+          activity_id: "",
+          sub_activity_id: "",
+          member_id: "",
+        });
+      }, 3000);
+    }
+  }, [form]);
+
+
+
 
   // ------------------------------------------------------------------
   const userPoints = 880; // แต้มปัจจุบัน (mock)
