@@ -38,10 +38,15 @@ jobs:
 
       - name: Archive production build
         run: |
-          tar -czf build.tar.gz .next public package.json next.config.mjs .env.production
+          tar -czf build.tar.gz \
+          --exclude="node_modules" \
+          --exclude=".git" \
+          .next public package.json next.config.mjs .env.production
+
 
       - name: Setup SSH key
         run: |
+          set -e
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
@@ -54,7 +59,9 @@ jobs:
       - name: Extract and restart on VPS
         run: |
           ssh xver@185.84.160.236 '
+            set -e
             export PATH="/home/xver/.nvm/versions/node/v22.16.0/bin:$PATH"
+            export NODE_ENV=production
             cd /home/xver/eBooth/ebooth-gamifications
             rm -rf .next
             tar -xzf build.tar.gz
